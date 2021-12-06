@@ -1,8 +1,8 @@
 {
     "dependencies": {
         "babel": "^6.23.0",
-        "convict": "^6.2.1",
         "create-typescript-project": "^0.8.0",
+        "home-config": "^0.1.0",
         "iota-is-client": "^0.0.4",
         "yaml": "^1.10.2"
     },

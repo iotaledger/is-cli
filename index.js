@@ -39,6 +39,7 @@ exports.__esModule = true;
 var iota_is_client_1 = require("iota-is-client");
 var iota_is_client_2 = require("iota-is-client");
 var iota_is_client_3 = require("iota-is-client");
+var cfg = require('home-config').load('config.ini');
 function bootstrap() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
@@ -47,7 +48,7 @@ function bootstrap() {
             switch (_c.label) {
                 case 0:
                     _c.trys.push([0, 9, , 10]);
-                    manager = new iota_is_client_1.Manager('mongodb+srv://JuriB:BetterThanNothing@cluster0.6q0bv.mongodb.net/test?authSource=admin&replicaSet=atlas-10j2kz-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true', 'integration-services', 'PpKFhPKJY2efTsN9VkB7WNtYUhX9Utaa');
+                    manager = new iota_is_client_1.Manager(cfg.url, cfg.name, cfg.secret);
                     return [4 /*yield*/, manager.getRootIdentity()];
                 case 1:
                     rootId = _c.sent();
@@ -107,4 +108,8 @@ function bootstrap() {
         });
     });
 }
+var configuration = function () {
+    console.log(cfg.getAll());
+};
 bootstrap();
+configuration();

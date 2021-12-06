@@ -3,14 +3,15 @@ import { Manager } from 'iota-is-client';
 import { ApiVersion } from 'iota-is-client';
 import { Identity } from 'iota-is-client';
 import { IdentityInternal } from 'iota-is-client';
+var configurations = require('home-config').load('config.ini');
 
 async function bootstrap() {
   try {
 
     let manager = new Manager(
-      'mongodb+srv://JuriB:BetterThanNothing@cluster0.6q0bv.mongodb.net/test?authSource=admin&replicaSet=atlas-10j2kz-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true', 
-      'integration-services', 
-      'PpKFhPKJY2efTsN9VkB7WNtYUhX9Utaa'
+      configurations.url,
+      configurations.name,
+      configurations.secret
     );
 
     let rootId = await manager.getRootIdentity();
@@ -24,12 +25,12 @@ async function bootstrap() {
       baseUrl: 'http://127.0.0.1:3000',
       apiVersion: ApiVersion.v1
     }
-     
+
     let api = new Identity(config);
- 
+
     // Became root identity
     await api.authenticate(rootId);
-    
+
     console.log(api.jwtToken)
 
     // Get information about root identity
@@ -46,7 +47,7 @@ async function bootstrap() {
     let verified = await api.checkCredential(identityCredential);
 
     console.log('Verification result', verified);
-    
+
     // Create identity for tester
     let userIdentity = await api.create('tester user', {
       type: 'user'
@@ -72,5 +73,6 @@ async function bootstrap() {
     console.log(e);
   }
 }
+
 
 bootstrap();
