@@ -1,0 +1,26 @@
+{
+    "dependencies": {
+        "babel": "^6.23.0",
+        "convict": "^6.2.1",
+        "create-typescript-project": "^0.8.0",
+        "iota-is-client": "^0.0.4",
+        "yaml": "^1.10.2"
+    },
+    "name": "client-integration-services",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "prepare": "tsc",
+        "build": "tsc",
+        "start": "ts-node src/index.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "husky": {
+        "hooks": {
+            "pre-commit": "pretty-quick --staged"
+        }
+    }
+}
