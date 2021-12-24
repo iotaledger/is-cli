@@ -1,6 +1,7 @@
 {
     "dependencies": {
         "babel": "^6.23.0",
+        "commander": "^8.3.0",
         "create-typescript-project": "^0.8.0",
         "home-config": "^0.1.0",
         "iota-is-client": "^0.0.4",
@@ -8,11 +9,10 @@
     },
     "name": "client-integration-services",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "src/index.js",
     "scripts": {
-        "prepare": "tsc",
-        "build": "tsc",
-        "start": "ts-node src/index.ts"
+        "start": "tsc --module commonjs && node ./dist/index.js",
+        "build": "tsc"
     },
     "keywords": [],
     "author": "",
@@ -22,5 +22,12 @@
         "hooks": {
             "pre-commit": "pretty-quick --staged"
         }
+    },
+    "bin": {
+        "is": "./src/index.ts"
+    },
+    "type": "commonjs",
+    "devDependencies": {
+        "@types/node": "^17.0.1"
     }
 }

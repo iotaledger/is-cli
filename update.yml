@@ -1,0 +1,26 @@
+identityId: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj"
+publicKey: "ARLHCvYgWXmfQKM92dmbbPdXgdhVJ46oDENKuwgQkouo"
+  verifiableCredentials: [
+    {
+      @context: "https://www.w3.org/2018/credentials/v1",
+      id: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj",
+      type: [
+        "VerifiableCredential",
+        "VerifiedIdentityCredential"
+      ],
+      credentialSubject: {
+        id: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj",
+        type: "Service",
+        initiatorId: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj"
+      },
+      issuer: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj",
+      issuanceDate: "2021-06-21T08:05:26Z",
+      proof: {
+        type: "MerkleKeySignature2021",
+        verificationMethod: null,
+        signatureValue: "example-key"
+      }
+    }
+  ]
+
+  

@@ -1,0 +1,6 @@
+url: mongodb+srv://JuriB:BetterThanNothing@cluster0.6q0bv.mongodb.net/test?authSource=admin&replicaSet=atlas-10j2kz-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true
+name: integration-services
+secret: PpKFhPKJY2efTsN9VkB7WNtYUhX9Utaa
+
+apiKey: 1cfa3bce-654d-41f6-a82a-94308dc4adf8
+baseUrl: http://127.0.0.1:3000
