@@ -24,7 +24,7 @@
         }
     },
     "bin": {
-        "is": "./src/index.ts"
+        "iscli": "./src/index.ts"
     },
     "type": "commonjs",
     "devDependencies": {

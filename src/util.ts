@@ -3,111 +3,138 @@ import { Manager } from 'iota-is-client';
 import { ApiVersion } from 'iota-is-client';
 import { Identity, User, IdentityInternal, TrustedRootBody } from 'iota-is-client';
 const configurations = require('home-config').load('config.ini');
-const fs = require('fs')
-const yaml = require('yaml')
+const fs = require('fs');
+const yaml = require('yaml');
 
 
-exports.create = async (createFile: any) => {
-  let api = getApi();
-  const file = fs.readFileSync(createFile.create, 'utf8')
-  const doc = yaml.parseDocument(file);
-  const ob = JSON.parse(JSON.stringify(doc))
-
-  const identity = await api?.create("Device", ob.claim);
-
-  console.log('identity', identity)
+exports.create = async (createFile: { apply: string }) => {
+  try {
+    let api = getApi();
+    const file = fs.readFileSync(createFile.apply, 'utf8');
+    const doc = yaml.parseDocument(file);
+    const didObj = JSON.parse(JSON.stringify(doc));
+    const identity = await api?.create("Device", didObj.claim);
+    console.log('identity', identity);
+  } catch (ex: any) {
+    console.log(ex);
+  }
 }
 
-exports.search = async (username: any) => {
-  let api = await getAuthenticatedApi();
-  let users = await api?.search(username.username);
-  console.log(users);
+exports.search = async (username: string) => {
+  try {
+    let api = await getAuthenticatedApi();
+    let users = await api?.search(username);
+    console.log(users);
+  } catch (ex: any) {
+    console.log(ex);
+  }
 }
 
-exports.find = async (identityId: any) => {
-  let api = await getAuthenticatedApi();
-  let did = await api?.find(identityId.did);
-  console.log(did)
+exports.find = async (identityId: string) => {
+  try {
+    let api = await getAuthenticatedApi();
+    let did = await api?.find(identityId);
+    console.log(did);
+  } catch (ex: any) {
+    console.log(ex);
+  }
 }
 
-exports.remove = async (identityId: any) => {
-  let api = await getAuthenticatedApi();
-  let did = await api?.remove(identityId.did)
-  console.log('Removed: ', identityId.did)
-
+exports.remove = async (identityId: string, revoke?: boolean) => {
+  try {
+    let api = await getAuthenticatedApi();
+    revoke ? await api?.remove(identityId, true) : await api?.remove(identityId);
+    console.log('Removed: ', identityId);
+  } catch (ex: any) {
+    console.log(ex);
+  }
 }
 
-exports.update = async (identity: any) => {
-  let api = await getAuthenticatedApi();
-  const file = fs.readFileSync(identity.put, 'utf8')
-  const doc = yaml.parseDocument(file);
-  const ob = JSON.parse(JSON.stringify(doc))
-  let update = await api?.update(ob);
-  console.log(update)
+exports.update = async (updateFile: string) => {
+  try {
+    let api = await getAuthenticatedApi();
+    const file = fs.readFileSync(updateFile, 'utf8');
+    const doc = yaml.parseDocument(file);
+    const did = JSON.parse(JSON.stringify(doc));
+    let update = await api?.update(did);
+    console.log(update);
+  } catch (ex: any) {
+    console.log(ex);
+  }
 }
 
 exports.latestDocument = async (identityId: string) => {
-  let api = await getAuthenticatedApi();
-  let latestDocument = await api?.latestDocument(identityId);
-  console.log(latestDocument);
+  try {
+    let api = await getAuthenticatedApi();
+    let latestDocument = await api?.latestDocument(identityId);
+    console.log(latestDocument);
+  } catch (ex: any) {
+    console.log(ex);
+  }
 }
 
 exports.getTrustedAuthorities = async () => {
   try {
     let api = await getAuthenticatedApi();
-    let res = await api?.getTrustedAuthorities();
-    console.log(res)
-  } catch (e) {
-    console.log(e)
+    let trustedAuthority = await api?.getTrustedAuthorities();
+    console.log(trustedAuthority);
+  } catch (ex: any) {
+    console.log(ex);
   }
 }
 
-exports.createCredential = async (credentialVC: any) => {
-  let api = await getAuthenticatedApi();
-  const file = fs.readFileSync(credentialVC, 'utf8')
-  const doc = yaml.parseDocument(file);
-  const ob = JSON.parse(JSON.stringify(doc))
-  let res = await api?.createCredential(ob.initiatorVC, ob.initiatorVC.id, ob.claim)
-  console.log(res)
-  
+exports.createCredential = async (credentialVC: string) => {
+  try {
+    let api = await getAuthenticatedApi();
+    const file = fs.readFileSync(credentialVC, 'utf8');
+    const doc = yaml.parseDocument(file);
+    const ob = JSON.parse(JSON.stringify(doc));
+    let res = await api?.createCredential(ob.initiatorVC, ob.initiatorVC.id, ob.claim);
+    console.log(res);
+  } catch (ex: any) {
+    console.log(ex);
+  }
 }
 
-exports.add = async (identity: string) => {
-  let api = await getAuthenticatedApi();
-  //let manager = await getManager();
-  //let rootId = await manager?.getRootIdentity();
-  //manager?.close();
-  //let rootIdentity = (await api?.find(rootId?.doc?.id)) as IdentityInternal;
-  //const verifiableCredentials = rootIdentity!.verifiableCredentials;
-  //let rootCredential = verifiableCredentials ? verifiableCredentials[0] : null;
-  //let vc = await api?.createCredential(rootCredential!, identity, { sensor : 'Pressure'});
-  //let ver = await api?.checkCredential(vc!);
-  let res = (await api?.find(identity)) as IdentityInternal;
-  res.identityId = 'did:iota:Hd7TTaswZiGJ5V8HUkMYHB7JB4Q2FHET37ywtYLFqwwK'
-  let result = await api!.add(res)
-  console.log(result, 'added')
-
-  //console.log(result)
-
-  //let result = await api?.add(res!);
-  //console.log(result)
-
+exports.checkCredential = async (credentialVC: string) => {
+  try {
+    let api = await getAuthenticatedApi();
+    const file = fs.readFileSync(credentialVC, 'utf-8');
+    const doc = yaml.parseDocument(file);
+    const ob = JSON.parse(JSON.stringify(doc));
+    console.log(ob)
+    let res = await api?.checkCredential(ob);
+    console.log(res)
+  } catch (ex: any) {
+    console.log(ex)
+  }
 }
 
-
+exports.revokeCredential = async (signatureValue: string) => {
+  try {
+    let api = await getAuthenticatedApi();
+    const body = { signatureValue: signatureValue }
+    let res = await api?.revokeCredential(body);
+    console.log(res)
+  } catch (ex) {
+    console.log(ex)
+  }
+}
 
 
 
 const getAuthenticatedApi = async () => {
-  let api = getApi();
-  let manager = getManager();
-  let rootId = await manager?.getRootIdentity();
-  await api?.authenticate(rootId);
-  await manager?.close();
-  return api;
+  try {
+    let api = getApi();
+    let manager = getManager();
+    let rootId = await manager?.getRootIdentity();
+    await api?.authenticate(rootId);
+    await manager?.close();
+    return api;
+  } catch (ex: any) {
+    console.log(ex);
+  }
 }
-
-
 
 const getManager = () => {
   try {
@@ -117,11 +144,11 @@ const getManager = () => {
       configurations.secret
     );
     return manager
-  } catch (e: any) {
-    console.log(e)
+  } catch (ex: any) {
+    console.log(ex)
   }
-
 }
+
 const getApi = () => {
   try {
     let config: ClientConfig = {
@@ -133,8 +160,8 @@ const getApi = () => {
     let api = new Identity(config);
     return api;
 
-  } catch (e: any) {
-    console.log(e);
+  } catch (ex: any) {
+    console.log(ex);
   }
 }
 

@@ -1,19 +1,19 @@
-identityId: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj"
+identityId: "did:iota:A5efQyrUJ6StxqLEAG2xzZSVdMqax93CRz4bsVBgDJN9"
 publicKey: "ARLHCvYgWXmfQKM92dmbbPdXgdhVJ46oDENKuwgQkouo"
   verifiableCredentials: [
     {
       @context: "https://www.w3.org/2018/credentials/v1",
-      id: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj",
+      id: "did:iota:A5efQyrUJ6StxqLEAG2xzZSVdMqax93CRz4bsVBgDJN9",
       type: [
         "VerifiableCredential",
         "VerifiedIdentityCredential"
       ],
       credentialSubject: {
-        id: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj",
+        id: "did:iota:A5efQyrUJ6StxqLEAG2xzZSVdMqax93CRz4bsVBgDJN9",
         type: "Service",
-        initiatorId: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj"
+        initiatorId: "did:iota:A5efQyrUJ6StxqLEAG2xzZSVdMqax93CRz4bsVBgDJN9"
       },
-      issuer: "did:iota:8Dx4v7dYXWeDLjnmMxErby82xUXdu9eMGQunCygMAyjj",
+      issuer: "did:iota:A5efQyrUJ6StxqLEAG2xzZSVdMqax93CRz4bsVBgDJN9",
       issuanceDate: "2021-06-21T08:05:26Z",
       proof: {
         type: "MerkleKeySignature2021",
