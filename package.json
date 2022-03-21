@@ -1,33 +1,51 @@
 {
+    "name": "iota-is-cli",
+    "version": "0.0.7",
+    "main": "index.js",
+    "license": "ISC",
+    "description": "CLI to interact with IOTA's Integration Services",
+    "type": "commonjs",
+    "types": "lib",
+    "bin": {
+        "iscli": "bin/iscli"
+    },
     "dependencies": {
         "babel": "^6.23.0",
         "commander": "^8.3.0",
         "create-typescript-project": "^0.8.0",
         "home-config": "^0.1.0",
-        "iota-is-client": "^0.0.4",
+        "iota-is-sdk": "^0.0.9",
+        "nconf": "^0.11.3",
         "yaml": "^1.10.2"
     },
-    "name": "client-integration-services",
-    "version": "1.0.0",
-    "main": "src/index.js",
     "scripts": {
         "start": "tsc --module commonjs && node ./dist/index.js",
+        "package": "pkg . -t node16 --output iota-is-cli",
         "build": "tsc"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "description": "",
+    "keywords": [
+        "cli",
+        "iscli"
+    ],
+    "author": {
+        "name": "Juri Bogatyrjow",
+        "email": "juri.bogatyrjow@iota.org"
+    },
+    "repository": {
+        "url": "https://github.com/iota-community/iscli",
+        "type": "git"
+    },
     "husky": {
         "hooks": {
             "pre-commit": "pretty-quick --staged"
         }
     },
-    "bin": {
-        "iscli": "./src/index.ts"
-    },
-    "type": "commonjs",
     "devDependencies": {
-        "@types/node": "^17.0.1"
-    }
+        "@types/node": "^16.0.1",
+        "pkg": "^5.5.2"
+    },
+    "files": [
+        "bin/",
+        "dist/"
+    ]
 }

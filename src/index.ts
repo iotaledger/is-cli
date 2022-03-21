@@ -2,50 +2,44 @@
 
 let program = require("commander")
 const configurations = require('home-config').load('config.ini');
-const identity = require('../dist/identity')
-const channel = require('../dist/channel')
-
+const identity = require('./identity')
+const channel = require('./channel')
+const config = require('./config')
 
 program.version('0.1.0')
 
-
 program
-  .command('login')
-  .option('-a, --admin <admin-config.ini>')
-  .option('-o, --output <admin-identity.json>')
-  .description('Login')
-  .action(identity.login)
+  .command('config')
+  .option('-b, --baseUrl <base URL>')
+  .option('-a, --apiKey <api Key>')
+  .description('Config')
+  .action(config.configure)
 
 //create did
 program
   .command('create')
-  .option('-c, --config <config.ini>')
-  .option('-i, --identity <admin-identity.json')
-  .option('-a, --apply <create.yml>')
+  .option('-a, --apply <create.json>')
   .description('Create DID')
   .action(identity.create)
 
 // search dids by username
 program
-  .command('search <username')
-  .option('-c, --config <config.ini>')
-  .option('-i, --identity <admin-identity.json')
+  .command('search <username>')
+  .option('-i, --identity <admin-identity.json>')
   .description('Search users by username')
   .action(identity.search)
 
 //find did by id  
 program
   .command('find <identity>')
-  .option('-c, --config <config.ini>')
   .option('-i, --identity <admin-identity.json>')
   .description('Find identity by id')
   .action(identity.find)
 
 //delete did by id 
 program
-  .command('remove <identityId')
+  .command('remove <identityId>')
   .option('-i, --identity <admin-identity.json>')
-  .option('-c, --config <config.ini>')
   .option('-r, --revoke')
   .description('Remove identity by id')
   .action(identity.remove)
@@ -53,7 +47,6 @@ program
 //update did 
 program
   .command('update <updateFile>')
-  .option('-c, --config <config.ini>')
   .option('-i, --identity <admin-identity.json>')
   .description('Update DID')
   .action(identity.update)
@@ -61,7 +54,6 @@ program
 // return latest document of did  
 program
   .command('get <identityId>')
-  .option('-c, --config ')
   .option('-i, --identity <admin-identity.json>')
   .description('Returns latest document by id')
   .action(identity.latestDocument)
@@ -69,15 +61,13 @@ program
 //get trusted root identities  
 program
   .command('root')
-  .option('-c, --config ')
   .option('-i, --identity <admin-identity.json>')
   .description('Get trusted root identities')
   .action(identity.getTrustedAuthorities)
 
 //add trusted root identity
 program
-  .command('add root')
-  .option('-c, --config ')
+  .command('add root <identityId>')
   .option('-i, --identity <admin-identity.json>')
   .description('Add trusted root identity')
   .action(identity.addTrustedAuthority)
@@ -85,7 +75,6 @@ program
 //remove trusted root identity by id
 program
   .command('add remove <authorityId>')
-  .option('-c, --config ')
   .option('-i, --identity <admin-identity.json>')
   .description('Remove trusted root identity by id')
   .action(identity.removeTrustedAuthority)
@@ -93,7 +82,6 @@ program
 //create verifiable credential   
 program
   .command('createvc <credentialFile>')
-  .option('-c, --config ')
   .option('-i, --identity <identity.json>')
   .description('Verify the authenticity of an identity (of an individual, organization or object) and issue a credential stating the identity verification status.')
   .action(identity.createCredential)
@@ -101,7 +89,6 @@ program
 //check verifiable credential
 program
   .command('checkvc <credentialFile')
-  .option('-c, --config ')
   .option('-i, --identity <identity.json>')
   .description('Check the verifiable credential of an identity')
   .action(identity.checkCredential)
@@ -115,15 +102,19 @@ program
 
 program
   .command('create-channel')
-  .option('-c, --config <config.ini>')
   .option('-i, --identity <admin-identity.json')
-  .option('-a, --apply <channel.yml>')
+  .option('-a, --apply <channel.json>')
   .description('Create DID')
   .action(channel.createChannel)
 
+ program
+  .command('write <address>')
+  .option('-i, --identity <admin-identity.json')
+  .description('Write data into channel')
+  .action(channel.write)
+
 program
   .command('read <address>')
-  .option('-c, --config <config.ini>')
   .option('-a, --admin <admin-identity.json>')
   .option('-l, --limit <number>')
   .option('-i, --index <number>')
@@ -132,7 +123,5 @@ program
   .option('-eD, --endDate <date>')
   .description('Get data from the channel with address channel address.')
   .action(channel.read)
-
-
 
 program.parse(process.argv);
