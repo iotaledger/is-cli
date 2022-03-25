@@ -1,27 +1,19 @@
 {
-    "name": "iota-is-cli",
+    "name": "@iota/is-cli",
     "version": "0.0.7",
     "main": "index.js",
-    "license": "ISC",
+    "license": "Apache-2.0",
     "description": "CLI to interact with IOTA's Integration Services",
-    "type": "commonjs",
+    "type": "module",
     "types": "lib",
     "bin": {
-        "iscli": "bin/iscli"
-    },
-    "dependencies": {
-        "babel": "^6.23.0",
-        "commander": "^8.3.0",
-        "create-typescript-project": "^0.8.0",
-        "home-config": "^0.1.0",
-        "iota-is-sdk": "^0.0.9",
-        "nconf": "^0.11.3",
-        "yaml": "^1.10.2"
+        "is": "bin/is.js"
     },
     "scripts": {
-        "start": "tsc --module commonjs && node ./dist/index.js",
+        "start": "npm run build && node ./dist/index.js",
         "package": "pkg . -t node16 --output iota-is-cli",
-        "build": "tsc"
+        "build": "tsc",
+        "serve": "tsc --watch"
     },
     "keywords": [
         "cli",
@@ -40,7 +32,17 @@
             "pre-commit": "pretty-quick --staged"
         }
     },
+    "dependencies": {
+        "@iota/is-client": "^0.1.2",
+        "babel": "^6.23.0",
+        "chalk": "^5.0.1",
+        "commander": "^8.3.0",
+        "create-typescript-project": "^0.8.0",
+        "nconf": "^0.11.3",
+        "yaml": "^1.10.2"
+    },
     "devDependencies": {
+        "@types/nconf": "^0.10.2",
         "@types/node": "^16.0.1",
         "pkg": "^5.5.2"
     },

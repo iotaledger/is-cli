@@ -1,11 +1,10 @@
-import { ApiVersion, ChannelClient, ClientConfig } from 'iota-is-sdk';
-const fs = require('fs');
-const yaml = require('yaml');
-const nconf = require('nconf');
-const os = require('os');
-const path = require('path');
+import { ApiVersion, ChannelClient, ClientConfig } from '@iota/is-client';
+import fs from 'fs';
+import nconf from 'nconf';
+import os from 'os';
+import path from 'path';
 
-exports.createChannel = async (options: { identity: string, apply: string }) => {
+export const createChannel = async (options: { identity: string, apply: string }) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         const data = fs.readFileSync(options.apply, 'utf8');
@@ -16,7 +15,7 @@ exports.createChannel = async (options: { identity: string, apply: string }) => 
     }
 }
 
-exports.write = async (address: string, options: { identity: string, addChannelLogBody: string }) => {
+export const write = async (address: string, options: { identity: string, addChannelLogBody: string }) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         const data = fs.readFileSync(options.addChannelLogBody, 'utf8');
@@ -34,7 +33,7 @@ exports.write = async (address: string, options: { identity: string, addChannelL
     }
 }
 
-exports.read = async (address: string, options: {
+export const read = async (address: string, options: {
     config: string, identity: string, limit: string,
     index: string, asc: string, startDate: string, endDate: string
 }) => {
@@ -55,7 +54,7 @@ exports.read = async (address: string, options: {
     }
 }
 
-exports.readHistory = async (address: string, presharedKey: string, options: { config: string, identity: string }) => {
+export const readHistory = async (address: string, presharedKey: string, options: { config: string, identity: string }) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         const response = api?.readHistory(address, presharedKey);
@@ -65,7 +64,7 @@ exports.readHistory = async (address: string, presharedKey: string, options: { c
     }
 }
 
-exports.validate = async (address: string, options: { config: string, identity: string, validateBody: string }) => {
+export const validate = async (address: string, options: { config: string, identity: string, validateBody: string }) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         const data = fs.readFileSync(options.validateBody, 'utf8');
@@ -76,7 +75,7 @@ exports.validate = async (address: string, options: { config: string, identity: 
     }
 }
 
-exports.reimport = async (address: string, options: { config: string, identity: string, reimportBody: string }) => {
+export const reimport = async (address: string, options: { config: string, identity: string, reimportBody: string }) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         const data = fs.readFileSync(options.reimportBody, 'utf8');
@@ -87,22 +86,24 @@ exports.reimport = async (address: string, options: { config: string, identity: 
     }
 }
 
-exports.search = async (options: {
+export const searchChannel = async (options: {
     config: string, identity: string,
-    author?: string, topicType?: string, topicSource?: string,
+    authorId?: string, topicType?: string, topicSource?: string,
     created?: Date, latestMessage?: Date, limit?: number, index?: number
 }) => {
     try {
-        const api = await getAuthenticatedApi(options.identity);
+        const { identity, authorId, topicType, topicSource, created, latestMessage, limit, index} = options;
+        const api = await getAuthenticatedApi(identity);
+        
         const response = await api?.search(
             {
-                author: options?.author,
-                topicType: options?.topicType,
-                topicSource: options?.topicSource,
-                created: options?.created ? new Date(options.created) : undefined,
-                latestMessage: options?.latestMessage ? new Date(options.latestMessage) : undefined,
-                limit: options?.limit ? Number(options.limit) : undefined,
-                index: options?.index ? Number(options.index) : undefined
+                authorId,
+                topicType,
+                topicSource,
+                created: created ? new Date(created) : undefined,
+                latestMessage: latestMessage ? new Date(latestMessage) : undefined,
+                limit: limit ? Number(limit) : undefined,
+                index: index ? Number(index) : undefined
             }
         );
         console.log(response);
@@ -111,7 +112,7 @@ exports.search = async (options: {
     }
 }
 
-exports.info = async (address: string, options: { config: string, identity: string}) => {
+export const info = async (address: string, options: { config: string, identity: string}) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         const response = await api?.info(address);
@@ -121,7 +122,7 @@ exports.info = async (address: string, options: { config: string, identity: stri
     }
 }
 
-exports.addChannelInfo = async (options: { config: string, identity: string, channelInfo: string}) => {
+export const addChannelInfo = async (options: { config: string, identity: string, channelInfo: string}) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         const data = fs.readFileSync(options.channelInfo, 'utf8');
@@ -132,7 +133,7 @@ exports.addChannelInfo = async (options: { config: string, identity: string, cha
     }
 }
 
-exports.updateChannelInfo = async (options: { config: string, identity: string, channelInfo: string}) => {
+export const updateChannelInfo = async (options: { config: string, identity: string, channelInfo: string}) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         const data = fs.readFileSync(options.channelInfo, 'utf8');
@@ -143,7 +144,7 @@ exports.updateChannelInfo = async (options: { config: string, identity: string, 
     }
 }
 
-exports.remove = async (address: string, options: { config: string, identity: string}) => {
+export const removeChannel = async (address: string, options: { config: string, identity: string}) => {
     try {
         const api = await getAuthenticatedApi(options.identity);
         await api?.remove(address);
@@ -156,32 +157,32 @@ exports.remove = async (address: string, options: { config: string, identity: st
 
 const getAuthenticatedApi = async (identity: string): Promise<ChannelClient> => {
     let api = getApi();
-    const admin = JSON.parse(fs.readFileSync(identity));
+    const admin = JSON.parse(fs.readFileSync(identity, {encoding:'utf8', flag:'r'}));
     await api.authenticate(admin.doc.id, admin.key.secret);
     return api;
 }
 
 const getApi = (): ChannelClient => {
-    
     nconf.file({ 
-        file: path.join(os.homedir(), '.iota-is.json')
+      file: path.join(os.homedir(), '.iota-is.json')
     });
-
-    const baseUrl = nconf.get("baseUrl");
-    if (!baseUrl) {
-      throw Error("baseUrl is missing: run config command first");
+  
+    const isGatewayUrl = nconf.get("isGatewayUrl");
+    const ssiBridgeUrl = nconf.get("ssiBridgeUrl");
+    const auditTrailUrl = nconf.get("auditTrailUrl");
+  
+    if (!isGatewayUrl || !(ssiBridgeUrl && auditTrailUrl)) {
+      throw Error("isGatewayUrl or (ssiBridgeUrl AND auditTrailUrl) are missing: run config command first");
     }
   
     const apiKey = nconf.get("apiKey");
-    if (!apiKey) {
-      throw Error("apiKey is missing: run config command first");
-    }
   
     let config: ClientConfig = {
-        apiKey: apiKey,
-        baseUrl: baseUrl,
-        apiVersion: ApiVersion.v01
+      apiKey,
+      isGatewayUrl,
+      ssiBridgeUrl,
+      auditTrailUrl,
+      apiVersion: ApiVersion.v01
     }
-
     return new ChannelClient(config);
-}
+  }

@@ -1,23 +1,21 @@
-import { Identity } from 'iota-is-client/lib';
-import { IdentityClient, ApiVersion, ClientConfig, Manager } from 'iota-is-sdk';
-const fs = require('fs');
-const yaml = require('yaml');
-const nconf = require('nconf');
-const os = require('os');
-const path = require('path');
+import { IdentityClient, ApiVersion, ClientConfig } from '@iota/is-client';
+import chalk from 'chalk';
+import fs from 'fs';
+import nconf from 'nconf';
+import os from 'os';
+import path from 'path';
 
-exports.create = async (options: { apply: string }) => {
+export const createIdentity = async (identityFilePath: string) => {
   try {
-
-    let api = getApi();
-
-    const file = fs.readFileSync(options.apply, 'utf8');
+    const api = getApi();
+    const file = fs.readFileSync(identityFilePath, 'utf8');
     const data = JSON.parse(file);
     const response = await api.create(
       data.username, 
       data.claimType,
       data.claim
     );
+    console.log(chalk.bold.green('Identity create: '))
     console.log(response);
 
   } catch (ex: any) {
@@ -25,7 +23,7 @@ exports.create = async (options: { apply: string }) => {
   }
 }
 
-exports.search = async (username: string, options: { identity: string }) => {
+export const searchIdentity = async (username: string, options: { identity: string }) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     let response = await api?.search({ username });
@@ -35,7 +33,7 @@ exports.search = async (username: string, options: { identity: string }) => {
   }
 }
 
-exports.find = async (identityId: any, options: { identity: string }) => {
+export const findIdentity = async (identityId: any, options: { identity: string }) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     let response = await api?.find(identityId);
@@ -45,7 +43,7 @@ exports.find = async (identityId: any, options: { identity: string }) => {
   }
 }
 
-exports.add = async (options: {config: string, identity: string, identitiyData: string}) => {
+export const addIdentity = async (options: {config: string, identity: string, identitiyData: string}) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     const file = fs.readFileSync(options.identitiyData, 'utf8');
@@ -56,7 +54,7 @@ exports.add = async (options: {config: string, identity: string, identitiyData: 
   }
 }
 
-exports.remove = async (identityId: string, options: { identity: string, revoke?: boolean, config: string }) => {
+export const removeIdentity = async (identityId: string, options: { identity: string, revoke?: boolean, config: string }) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     options.revoke ? await api?.remove(identityId, true) : await api?.remove(identityId);
@@ -66,7 +64,7 @@ exports.remove = async (identityId: string, options: { identity: string, revoke?
   }
 }
 
-exports.update = async (updateFile: string, options: { identity: string }) => {
+export const updateIdentity = async (updateFile: string, options: { identity: string }) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     const file = fs.readFileSync(updateFile, 'utf8');
@@ -77,7 +75,7 @@ exports.update = async (updateFile: string, options: { identity: string }) => {
   }
 }
 
-exports.latestDocument = async (identityId: string, options: { identity: string, config: string }) => {
+export const latestDocument = async (identityId: string, options: { identity: string, config: string }) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     const response = await api?.latestDocument(identityId);
@@ -87,7 +85,7 @@ exports.latestDocument = async (identityId: string, options: { identity: string,
   }
 }
 
-exports.getTrustedAuthorities = async (options: { identity: string, config: string }) => {
+export const getTrustedAuthorities = async (options: { identity: string, config: string }) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     const response = await api?.getTrustedAuthorities();
@@ -97,7 +95,7 @@ exports.getTrustedAuthorities = async (options: { identity: string, config: stri
   }
 }
 
-exports.addTrustedAuthority = async (authority: string, options: { identity: string, config: string }) => {
+export const addTrustedAuthority = async (authority: string, options: { identity: string, config: string }) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     await api?.addTrustedAuthority(authority);
@@ -107,7 +105,7 @@ exports.addTrustedAuthority = async (authority: string, options: { identity: str
   }
 }
 
-exports.removeTrustedAuthority = async(authorityId: string, options: {identity: string, config: string}) => {
+export const removeTrustedAuthority = async(authorityId: string, options: {identity: string, config: string}) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     await api?.removeTrustedAuthority(authorityId);
@@ -117,7 +115,7 @@ exports.removeTrustedAuthority = async(authorityId: string, options: {identity: 
   }
 }
 
-exports.createCredential = async (vcFile: string, options: {identity: string, config: string}) => {
+export const createCredential = async (vcFile: string, options: {identity: string, config: string}) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     const file = fs.readFileSync(vcFile, 'utf8');
@@ -137,7 +135,7 @@ exports.createCredential = async (vcFile: string, options: {identity: string, co
   }
 }
 
-exports.checkCredential = async (vcFile: string, options: {identity: string, config: string}) => {
+export const checkCredential = async (vcFile: string, options: {identity: string, config: string}) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     const file = fs.readFileSync(vcFile, 'utf-8');
@@ -148,7 +146,7 @@ exports.checkCredential = async (vcFile: string, options: {identity: string, con
   }
 }
 
-exports.revokeCredential = async (signatureValue: string, options: {identity: string, config: string}) => {
+export const revokeCredential = async (signatureValue: string, options: {identity: string, config: string}) => {
   try {
     const api = await getAuthenticatedApi(options.identity)
     await api?.revokeCredential({signatureValue: signatureValue});
@@ -160,7 +158,7 @@ exports.revokeCredential = async (signatureValue: string, options: {identity: st
 
 const getAuthenticatedApi = async (identity: string): Promise<IdentityClient> => {
   let api = getApi();
-  const admin = JSON.parse(fs.readFileSync(identity));
+  const admin = JSON.parse(fs.readFileSync(identity, {encoding:'utf8', flag:'r'}));
   await api.authenticate(admin.doc.id, admin.key.secret);
   return api;
 }
@@ -170,19 +168,21 @@ const getApi = (): IdentityClient => {
     file: path.join(os.homedir(), '.iota-is.json')
   });
 
-  const baseUrl = nconf.get("baseUrl");
-  if (!baseUrl) {
-    throw Error("baseUrl is missing: run config command first");
+  const isGatewayUrl = nconf.get("isGatewayUrl");
+  const ssiBridgeUrl = nconf.get("ssiBridgeUrl");
+  const auditTrailUrl = nconf.get("auditTrailUrl");
+
+  if (!isGatewayUrl && !(ssiBridgeUrl || auditTrailUrl)) {
+    throw Error("isGatewayUrl or (ssiBridgeUrl AND auditTrailUrl) are missing: run config command first");
   }
 
   const apiKey = nconf.get("apiKey");
-  if (!apiKey) {
-    throw Error("apiKey is missing: run config command first");
-  }
 
   let config: ClientConfig = {
-    apiKey: apiKey,
-    baseUrl: baseUrl,
+    apiKey,
+    isGatewayUrl,
+    ssiBridgeUrl,
+    auditTrailUrl,
     apiVersion: ApiVersion.v01
   }
   return new IdentityClient(config);
