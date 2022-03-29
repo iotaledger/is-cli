@@ -1,6 +1,0 @@
-{
-    "topics": [{
-        "type": "log",
-        "source": "kafka"
-    }]
-}

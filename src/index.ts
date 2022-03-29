@@ -1,7 +1,21 @@
 import { program } from 'commander';
-import {createChannel, read, searchChannel, write} from './channel.js';
+import { createChannel, readChannel, writeChannel } from './channel.js';
 import { configure } from './config.js';
-import { addTrustedAuthority, checkCredential, createCredential, createIdentity, findIdentity, getTrustedAuthorities, latestDocument, removeIdentity, removeTrustedAuthority, revokeCredential, searchIdentity, updateIdentity } from './identity.js';
+import {
+    addIdentity,
+    addTrustedAuthority,
+    checkCredential,
+    createIdentity,
+    findIdentity,
+    getTrustedAuthorities,
+    latestDocument,
+    removeIdentity,
+    removeTrustedAuthority,
+    revokeCredential,
+    searchIdentity,
+    updateIdentity
+} from './identity.js';
+import { setupNode } from './setup-api.js';
 
 program.version('0.1.0');
 
@@ -10,120 +24,126 @@ program
     .requiredOption('-s, --ssiBridgeUrl <SSI Bridge URL>')
     .requiredOption('-a, --auditTrailUrl <Audit Trail URL>')
     .option('-k, --apiKey <api Key>')
-    .description('Config')
+    .description('Configure CLI for local usage')
     .action(configure);
 
 program
     .command('prod-config')
     .option('-isGatewayUrl, --g <Gateway URL>')
     .option('-k, --apiKey <api Key>')
-    .description('Config')
+    .description('Configure CLI for production usage')
     .action(configure);
 
 //create did
-program.command('create').argument('<create.json>', 'Path to DID file', createIdentity);
+program
+    .command('create-identity <identityFile>')
+    .description('Create a new DID with a .json file')
+    .action(createIdentity);
 
 // search dids by username
 program
-    .command('search <username>')
-    .option('-i, --identity <admin-identity.json>')
+    .command('search-identiy <username>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Search users by username')
     .action(searchIdentity);
 
 //find did by id
 program
-    .command('find <identity>')
-    .option('-i, --identity <admin-identity.json>')
-    .description('Find identity by id')
+    .command('find-identity <identityId>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .description('Find identity by identity id')
     .action(findIdentity);
 
-//delete did by id
+//add did to bridge
 program
-    .command('remove <identityId>')
-    .option('-i, --identity <admin-identity.json>')
+    .command('add-identity <pathToAddIdentityFile>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .description('Add identity to bridge')
+    .action(addIdentity);
+
+//delete did from bridge
+program
+    .command('remove-identity <identityId>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .option('-r, --revoke')
-    .description('Remove identity by id')
+    .description('Remove identity by identity id')
     .action(removeIdentity);
 
 //update did
 program
-    .command('update <updateFile>')
-    .option('-i, --identity <admin-identity.json>')
-    .description('Update DID')
+    .command('update-identity <updateFile>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .description('Update with supplied document')
     .action(updateIdentity);
 
 // return latest document of did
 program
-    .command('get <identityId>')
-    .option('-i, --identity <admin-identity.json>')
+    .command('get-identity <identityId>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Returns latest document by id')
     .action(latestDocument);
 
 //get trusted root identities
 program
-    .command('root')
-    .option('-i, --identity <admin-identity.json>')
+    .command('get-trusted')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Get trusted root identities')
     .action(getTrustedAuthorities);
 
 //add trusted root identity
 program
-    .command('add root <identityId>')
-    .option('-i, --identity <admin-identity.json>')
+    .command('add-trusted <authorityId>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Add trusted root identity')
     .action(addTrustedAuthority);
 
 //remove trusted root identity by id
 program
-    .command('add remove <authorityId>')
-    .option('-i, --identity <admin-identity.json>')
+    .command('remove-trusted <authorityId>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Remove trusted root identity by id')
     .action(removeTrustedAuthority);
 
-//create verifiable credential
-program
-    .command('createvc <credentialFile>')
-    .option('-i, --identity <identity.json>')
-    .description(
-        'Verify the authenticity of an identity (of an individual, organization or object) and issue a credential stating the identity verification status.'
-    )
-    .action(createCredential);
-
 //check verifiable credential
 program
-    .command('checkvc <credentialFile')
-    .option('-i, --identity <identity.json>')
+    .command('check-vc <credentialFile')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Check the verifiable credential of an identity')
     .action(checkCredential);
 
 //revoke verifiable credential
 program
-    .command('revokevc <signatureValue>')
+    .command('revoke-vc <signatureValue>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Revoke one specific verifiable credential of an identity')
     .action(revokeCredential);
 
 program
-    .command('create-channel')
-    .option('-i, --identity <admin-identity.json')
-    .option('-a, --apply <channel.json>')
-    .description('Create DID')
+    .command('create-channel <name>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .requiredOption('-t, --type <type-of-channel>')
+    .requiredOption('-s, --source <source-of-channel>')
+    .description('Create a channel')
     .action(createChannel);
 
 program
-    .command('write <address>')
-    .option('-i, --identity <admin-identity.json')
+    .command('write-channel <address>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .requiredOption('-p, --payload <message-payload>')
     .description('Write data into channel')
-    .action(write);
+    .action(writeChannel);
 
 program
-    .command('read <address>')
-    .option('-a, --admin <admin-identity.json>')
-    .option('-l, --limit <number>')
-    .option('-i, --index <number>')
+    .command('read-channel <address>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .option('-li, --limit <number>')
+    .option('-in, --index <number>')
     .option('-o, --order <boolean>')
     .option('-sD, --startDate <date>')
     .option('-eD, --endDate <date>')
     .description('Get data from the channel with address channel address.')
-    .action(read);
+    .action(readChannel);
+
+program.command('setup-node').description('Setup environment for API').action(setupNode);
 
 program.parse(process.argv);
