@@ -193,19 +193,19 @@ const getApi = (): IdentityClient => {
     const isGatewayUrl = nconf.get('isGatewayUrl');
     const ssiBridgeUrl = nconf.get('ssiBridgeUrl');
     const auditTrailUrl = nconf.get('auditTrailUrl');
-
-    if (!isGatewayUrl && !(ssiBridgeUrl || auditTrailUrl)) {
-        throw Error('isGatewayUrl or (ssiBridgeUrl AND auditTrailUrl) are missing: run local-config command first');
-    }
-
+    const apiVersion = nconf.get('apiVersion');
     const apiKey = nconf.get('apiKey');
 
-    let config: ClientConfig = {
+    if (!isGatewayUrl && !(ssiBridgeUrl || auditTrailUrl)) {
+        throw Error('isGatewayUrl or both ssiBridgeUrl AND auditTrailUrl are missing: run config command first');
+    }
+
+    const config: ClientConfig = {
         apiKey,
         isGatewayUrl,
         ssiBridgeUrl,
         auditTrailUrl,
-        apiVersion: ApiVersion.v01
+        apiVersion
     };
     return new IdentityClient(config);
 };

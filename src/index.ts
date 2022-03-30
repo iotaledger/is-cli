@@ -20,18 +20,13 @@ import { setupNode } from './setup-api.js';
 program.version('0.1.0');
 
 program
-    .command('local-config')
-    .requiredOption('-s, --ssiBridgeUrl <SSI Bridge URL>')
-    .requiredOption('-a, --auditTrailUrl <Audit Trail URL>')
+    .command('config')
+    .option('-s, --ssiBridgeUrl <SSI Bridge URL>')
+    .option('-a, --auditTrailUrl <Audit Trail URL>')
+    .option('-g, --isGatewayUrl <Gateway URL>')
     .option('-k, --apiKey <api Key>')
-    .description('Configure CLI for local usage')
-    .action(configure);
-
-program
-    .command('prod-config')
-    .option('-isGatewayUrl, --g <Gateway URL>')
-    .option('-k, --apiKey <api Key>')
-    .description('Configure CLI for production usage')
+    .option('-v, --apiVersion <api version>')
+    .description('Configure CLI with the API endpoints')
     .action(configure);
 
 //create did

@@ -10,7 +10,7 @@
         "is": "bin/is.js"
     },
     "scripts": {
-        "start": "npm install -g .",
+        "install": "npm install -g .",
         "package": "pkg . -t node16 --output iota-is-cli",
         "build": "tsc",
         "serve": "tsc --watch"

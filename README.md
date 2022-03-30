@@ -10,7 +10,7 @@ The command line interface for the Integration Services.
 
 1. Install packages: `npm i`
 2. Build CLI: `npm run build` or run build in watch `npm run serve`
-3. To use the CLI install it globally: `npm run start`
+3. To use the CLI install it globally: `npm run install`
 4. The CLI tool should now be available, try: `is --help`
 
 ## Usage
