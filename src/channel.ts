@@ -1,187 +1,104 @@
-import { ApiVersion, ChannelClient, ClientConfig } from 'iota-is-sdk';
-const fs = require('fs');
-const yaml = require('yaml');
-const nconf = require('nconf');
-const os = require('os');
-const path = require('path');
+import { ApiVersion, ChannelClient, ClientConfig } from '@iota/is-client';
+import chalk from 'chalk';
+import fs from 'fs';
+import nconf from 'nconf';
+import os from 'os';
+import path from 'path';
 
-exports.createChannel = async (options: { identity: string, apply: string }) => {
+export const createChannel = async (name: string, options: { type: string; source: string; identityFile: string }) => {
     try {
-        const api = await getAuthenticatedApi(options.identity);
-        const data = fs.readFileSync(options.apply, 'utf8');
-        const response = await api?.create(JSON.parse(data));
+        const { type, source, identityFile } = options;
+        const api = await getAuthenticatedApi(identityFile);
+        const response = await api?.create({ name, topics: [{ type, source }] });
+        console.log(chalk.bold.green('Created channel: '));
         console.log(response);
-    } catch (ex: any) {
-        console.log(ex);
+    } catch (e: any) {
+        console.log(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
     }
-}
+};
 
-exports.write = async (address: string, options: { identity: string, addChannelLogBody: string }) => {
+export const writeChannel = async (address: string, options: { identityFile: string; payload: string }) => {
     try {
-        const api = await getAuthenticatedApi(options.identity);
-        const data = fs.readFileSync(options.addChannelLogBody, 'utf8');
-        /*
-        type: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
-        created: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
-        metadata: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TAny>;
-        publicPayload: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TAny>;
-        payload: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TAny>;
-        */
-        const response = await api?.write(address, JSON.parse(data));
-        console.log(response)
-    } catch (ex: any) {
-        console.log(ex);
-    }
-}
-
-exports.read = async (address: string, options: {
-    config: string, identity: string, limit: string,
-    index: string, asc: string, startDate: string, endDate: string
-}) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const response = await api?.read(address,
-            {
-                limit: options.limit ? Number(options.limit) : undefined,
-                index: options.index ? Number(options.index) : undefined,
-                asc: options.asc ? Boolean(options.asc) : undefined,
-                startDate: options.startDate ? new Date(options.startDate) : undefined,
-                endDate: options.endDate ? new Date(options.endDate) : undefined
-            }
-        );
+        const { identityFile, payload } = options;
+        const api = await getAuthenticatedApi(identityFile);
+        const response = await api?.write(address, { payload });
+        console.log(chalk.bold.green('Message written to channel: ', address))
         console.log(response);
-    } catch (ex: any) {
-        console.log(ex)
+    } catch (e: any) {
+        console.log(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
     }
-}
+};
 
-exports.readHistory = async (address: string, presharedKey: string, options: { config: string, identity: string }) => {
+export const readChannel = async (
+    address: string,
+    options: {
+        identityFile: string;
+        limit: string;
+        index: string;
+        asc: string;
+        startDate: string;
+        endDate: string;
+    }
+) => {
     try {
-        const api = await getAuthenticatedApi(options.identity);
-        const response = api?.readHistory(address, presharedKey);
+        const {identityFile, limit, index, asc, startDate, endDate} = options;
+        const api = await getAuthenticatedApi(identityFile);
+        const response = await api?.read(address, {
+            limit: limit ? Number(limit) : undefined,
+            index: index ? Number(index) : undefined,
+            asc: asc ? Boolean(asc) : undefined,
+            startDate: startDate ? new Date(startDate) : undefined,
+            endDate: endDate ? new Date(endDate) : undefined
+        });
+        console.log(chalk.bold.green('Channel data'))
         console.log(response);
-    } catch (ex: any) {
-        console.log(ex);
+    } catch (e: any) {
+        console.log(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
     }
-}
+};
 
-exports.validate = async (address: string, options: { config: string, identity: string, validateBody: string }) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const data = fs.readFileSync(options.validateBody, 'utf8');
-        const response = api?.validate(address, JSON.parse(data));
-        console.log(response);
-    } catch (ex: any) {
-        console.log(ex);
-    }
-}
-
-exports.reimport = async (address: string, options: { config: string, identity: string, reimportBody: string }) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const data = fs.readFileSync(options.reimportBody, 'utf8');
-        await api?.reimport(address, JSON.parse(data));
-        console.log('Reimported data for ' + address);
-    } catch (ex: any) {
-        console.log(ex)
-    }
-}
-
-exports.search = async (options: {
-    config: string, identity: string,
-    author?: string, topicType?: string, topicSource?: string,
-    created?: Date, latestMessage?: Date, limit?: number, index?: number
-}) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const response = await api?.search(
-            {
-                author: options?.author,
-                topicType: options?.topicType,
-                topicSource: options?.topicSource,
-                created: options?.created ? new Date(options.created) : undefined,
-                latestMessage: options?.latestMessage ? new Date(options.latestMessage) : undefined,
-                limit: options?.limit ? Number(options.limit) : undefined,
-                index: options?.index ? Number(options.index) : undefined
-            }
-        );
-        console.log(response);
-    } catch (ex: any) {
-        console.log(ex)
-    }
-}
-
-exports.info = async (address: string, options: { config: string, identity: string}) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const response = await api?.info(address);
-        console.log(response);
-    } catch (ex: any) {
-        console.log(ex)
-    }
-}
-
-exports.addChannelInfo = async (options: { config: string, identity: string, channelInfo: string}) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const data = fs.readFileSync(options.channelInfo, 'utf8');
-        await api?.add(JSON.parse(data))
-        console.log("Added channel info");
-    } catch (ex: any) {
-        console.log(ex)
-    }
-}
-
-exports.updateChannelInfo = async (options: { config: string, identity: string, channelInfo: string}) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const data = fs.readFileSync(options.channelInfo, 'utf8');
-        await api?.update(JSON.parse(data))
-        console.log("Updated channel info");
-    } catch (ex: any) {
-        console.log(ex)
-    }
-}
-
-exports.remove = async (address: string, options: { config: string, identity: string}) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        await api?.remove(address);
-        console.log("Updated channel info");
-    } catch (ex: any) {
-        console.log(ex)
-    }
-}
-
-
-const getAuthenticatedApi = async (identity: string): Promise<ChannelClient> => {
+const getAuthenticatedApi = async (pathToIdentityFile: string): Promise<ChannelClient> => {
     let api = getApi();
-    const admin = JSON.parse(fs.readFileSync(identity));
-    await api.authenticate(admin.doc.id, admin.key.secret);
+    if (!fs.existsSync(pathToIdentityFile)) {
+        throw Error(chalk.bold.red('The identity file does not exist.'));
+    }
+    let identity;
+    try {
+        identity = JSON.parse(fs.readFileSync(pathToIdentityFile, { encoding: 'utf8', flag: 'r' }));
+    } catch (error: any) {
+        throw Error(chalk.bold.red('The supplied file is in a readable .json format.'));
+    }
+    if (!identity?.doc?.id || !identity?.key?.secret) {
+        throw Error(chalk.bold.red('The supplied file has no doc.id or nor key.secret attribute.'));
+    }
+    await api.authenticate(identity.doc.id, identity.key.secret);
     return api;
-}
+};
 
 const getApi = (): ChannelClient => {
-    
-    nconf.file({ 
+    nconf.file({
         file: path.join(os.homedir(), '.iota-is.json')
     });
 
-    const baseUrl = nconf.get("baseUrl");
-    if (!baseUrl) {
-      throw Error("baseUrl is missing: run config command first");
-    }
-  
-    const apiKey = nconf.get("apiKey");
-    if (!apiKey) {
-      throw Error("apiKey is missing: run config command first");
-    }
-  
-    let config: ClientConfig = {
-        apiKey: apiKey,
-        baseUrl: baseUrl,
-        apiVersion: ApiVersion.v01
+    const isGatewayUrl = nconf.get('isGatewayUrl');
+    const ssiBridgeUrl = nconf.get('ssiBridgeUrl');
+    const auditTrailUrl = nconf.get('auditTrailUrl');
+    const apiVersion = nconf.get('apiVersion');
+    const apiKey = nconf.get('apiKey');
+
+    if (!isGatewayUrl && !(ssiBridgeUrl || auditTrailUrl)) {
+        throw Error('isGatewayUrl or both ssiBridgeUrl AND auditTrailUrl are missing: run config command first');
     }
 
+    const config: ClientConfig = {
+        apiKey,
+        isGatewayUrl,
+        ssiBridgeUrl,
+        auditTrailUrl,
+        apiVersion
+    };
     return new ChannelClient(config);
-}
+};
