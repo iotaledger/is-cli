@@ -1,7 +1,8 @@
 name: Publish is-cli to npmjs
 on:
   push:
-      branches: [ main ]
+      branches-ignore:
+      - '**'
   workflow_dispatch:
 jobs:
   build:
