@@ -1,6 +1,6 @@
-# Contribute to project_title
+# Contribute to the IS-CLI
 
-This document describes how to contribute to project_title.
+This document describes how to contribute to the IS CLI.
 We encourage everyone with knowledge and passion in IOTA technology to do so.
 
 Thanks! :heart:
@@ -44,13 +44,13 @@ Please check the following list:
 
 - **Do not open a GitHub issue for [security vulnerabilities](.github/SECURITY.MD)**, instead, please contact us at [security@iota.org](mailto:security@iota.org).
 
-- **Ensure the bug was not already reported** by searching on GitHub under [**Issues**](https://github.com/iotaledger/template/issues). If the bug has already been reported **and the issue is still open**, add a comment to the existing issue instead of opening a new one.
+- **Ensure the bug was not already reported** by searching on GitHub under [**Issues**](https://github.com/iotaledger/is-cli/issues). If the bug has already been reported **and the issue is still open**, add a comment to the existing issue instead of opening a new one.
 
 **Note:** If you find a **Closed** issue that seems similar to what you're experiencing, open a new issue and include a link to the original issue in the body of your new one.
 
 ### Submitting a bug report
 
-To report a bug, [open a new issue](https://github.com/iotaledger/template/issues/new), and be sure to include as many details as possible, using the template.
+To report a bug, [open a new issue](https://github.com/iotaledger/is-cli/issues/new), and be sure to include as many details as possible, using the template.
 
 **Note:** Minor changes such as fixing a typo can but do not need an open issue.
 
@@ -67,11 +67,11 @@ This section guides you through suggesting a new feature. Following these guidel
 
 ### Before suggesting a new feature
 
-**Ensure the feature has not already been suggested** by searching on GitHub under [**Issues**](https://github.com/iotaledger/template/labels/request).
+**Ensure the feature has not already been suggested** by searching on GitHub under [**Issues**](https://github.com/iotaledger/is-cli/labels/request).
 
 ### Suggesting a new feature
 
-To suggest a new feature, open a [Feature Request](https://github.com/iotaledger/template/issues/new?template=feature_request.yml).
+To suggest a new feature, open a [Feature Request](https://github.com/iotaledger/is-cli/issues/new).
 
 </details>
 
@@ -85,7 +85,7 @@ This section guides you through building a new feature. Following these guidelin
 
 ### Before building a new feature
 
-Make sure to discuss the feature in [Discussions](https://github.com/iotaledger/template/discussions)
+Make sure to discuss the feature in out [Discord channel](https://discord.com/channels/397872799483428865/910192737842790400)
 
 Otherwise, your feature may not be approved at all.
 

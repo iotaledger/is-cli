@@ -38,19 +38,17 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-    <a href="https://github.com/iotaledger/template">
+    <a href="https://github.com/iotaledger/is-cli">
         <img src="is_banner.png" alt="Banner">
     </a>
     <h3 align="center">IS-CLI</h3>
     <p align="center">
         The Command Line Interface for the Integration Services. Setup the IS-API, manage Identities and Channels with ease.
         <br />
-        <a href="https://wiki.iota.org"><strong>Explore the docs »</strong></a>
         <br />
-        <br />
-        <a href="https://github.com/iota-community/iscli/labels/bug">Report Bug</a>
+        <a href="https://github.com/iotaledger/is-cli/labels/bug">Report Bug</a>
         ·
-        <a href="https://github.com/iota-community/iscli/labels/enhancement">Request Feature</a>
+        <a href="https://github.com/iotaledger/is-cli/labels/request">Request Feature</a>
     </p>
 </div>
 
@@ -132,10 +130,22 @@ npx @iota/is-cli <command>
 <!-- USAGE EXAMPLES -->
 ## Usage
 
--   For local API access run: `is config -s http://localhost:3001 -a http://localhost:3002 -k <your-api-key>`.
--   Configure API environment: `is setup-node`.
+### Configure CLI for local API access 
+```sh
+is config -s http://localhost:3001 -a http://localhost:3002 -k <your-api-key>
+```
+
+### Configure API environment
+```sh
+is setup-node
+```
+
+### View all commands
+```
+is help
+```
+
 -   For most of the channel and identity commands is a `identity.json` in the directory where the cli is executed needed.
--   View all command with `is help`.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -148,7 +158,7 @@ npx @iota/is-cli <command>
 - [ ] Add all IS-Client commands to the cli
 
 
-See the [open issues](https://github.com/iota-community/iscli/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/iotaledger/is-cli/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -187,7 +197,7 @@ Distributed under the Apache License. See `LICENSE` for more information.
 Tim Sigl - [@Schereo](https://twitter.com/schereo) - tim.sigl@iota.org <br>
 Juri Bogatyrjow - juri.bogatyrjow@iota.org
 
-Project Link: [https://github.com/iotaledger/template](https://github.com/iotaledger/template)
+Project Link: [https://github.com/iotaledger/is-cli](https://github.com/iotaledger/is-cli)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -196,17 +206,17 @@ Project Link: [https://github.com/iotaledger/template](https://github.com/iotale
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/iotaledger/template.svg?style=for-the-badge
-[contributors-url]: https://github.com/iotaledger/template/graphs/contributors
+[contributors-shield]: https://img.shields.io/github/contributors/iotaledger/is-cli?style=for-the-badge
+[contributors-url]: https://github.com/iotaledger/is-cli/graphs/contributors
 [npm-url]: https://www.npmjs.com/package/@iota/is-client
 [downloads-shield]: https://img.shields.io/npm/dw/@iota/is-cli?style=for-the-badge
 [npm-version-shield]: https://img.shields.io/npm/v/@iota/is-cli?style=for-the-badge
-[stars-shield]: https://img.shields.io/github/stars/iotaledger/template.svg?style=for-the-badge
-[stars-url]: https://github.com/iota-community/iscli/stargazers
-[issues-shield]: https://img.shields.io/github/issues/iotaledger/template.svg?style=for-the-badge
-[issues-url]: https://github.com/iotaledger/template/issues
-[license-shield]: https://img.shields.io/github/license/iotaledger/template.svg?style=for-the-badge
-[license-url]: https://github.com/iota-community/iscli/blob/main/LICENSE
+[stars-shield]: https://img.shields.io/github/stars/iotaledger/is-cli?style=for-the-badge
+[stars-url]: https://github.com/iotaledger/is-cli/stargazers
+[issues-shield]: https://img.shields.io/github/issues/iotaledger/is-cli?style=for-the-badge
+[issues-url]: https://github.com/iotaledger/is-cli/issues
+[license-shield]: https://img.shields.io/github/license/iotaledger/is-cli?style=for-the-badge
+[license-url]: https://github.com/iotaledger/is-cli/blob/refactoring/LICENSE
 [discord-shield]: https://img.shields.io/badge/Discord-9cf.svg?style=for-the-badge&logo=discord
 [discord-url]: https://discord.com/channels/397872799483428865/910192737842790400
 [stackexchange-shield]: https://img.shields.io/badge/StackExchange-9cf.svg?style=for-the-badge&logo=stackexchange
