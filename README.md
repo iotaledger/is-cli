@@ -208,7 +208,7 @@ Project Link: [https://github.com/iotaledger/is-cli](https://github.com/iotaledg
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/iotaledger/is-cli?style=for-the-badge
 [contributors-url]: https://github.com/iotaledger/is-cli/graphs/contributors
-[npm-url]: https://www.npmjs.com/package/@iota/is-client
+[npm-url]: https://www.npmjs.com/package/@iota/is-cli
 [downloads-shield]: https://img.shields.io/npm/dw/@iota/is-cli?style=for-the-badge
 [npm-version-shield]: https://img.shields.io/npm/v/@iota/is-cli?style=for-the-badge
 [stars-shield]: https://img.shields.io/github/stars/iotaledger/is-cli?style=for-the-badge
