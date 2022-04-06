@@ -31,7 +31,7 @@ program
 
 //create did
 program
-    .command('create-identity <identityFile>')
+    .option("-i, --identity <path>", "Identity file")
     .description('Create a new DID with a .json file')
     .action(createIdentity);
 
