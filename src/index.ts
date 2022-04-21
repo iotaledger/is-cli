@@ -15,7 +15,7 @@ import {
     searchIdentity,
     updateIdentity
 } from './identity.js';
-import { setupNode } from './setup-api.js';
+import { setupApi } from './setup-api.js';
 
 program.version('0.1.0');
 
@@ -139,6 +139,7 @@ program
     .description('Get data from the channel with address channel address.')
     .action(readChannel);
 
-program.command('setup-node').description('Setup environment for API').action(setupNode);
+program.command('setup-node').description('Setup environment for API').action(() => setupApi('node'));
+program.command('setup-docker').description('Setup environment for API').action(() => setupApi('docker'));
 
 program.parse(process.argv);
