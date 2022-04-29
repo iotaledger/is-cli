@@ -5,19 +5,25 @@ import nconf from 'nconf';
 import os from 'os';
 import path from 'path';
 
-export const createIdentity = async (params: { identityFile: string }) => {
-    const { identityFile } = params;
+export const createIdentity = async (params: { identity?: string }) => {
+    const { identity } = params;
     try {
         const api = getApi();
-        if (!fs.existsSync(identityFile)) {
-            throw Error(chalk.bold.red('The identity file does not exist.'));
+        let data = undefined;
+        if (!identity) {
+            data = JSON.parse(fs.readFileSync(0, 'utf-8'));
         }
-        const file = fs.readFileSync(identityFile, 'utf8');
-        const data = JSON.parse(file);
-    
+        else {
+            if (!fs.existsSync(identity)) {
+                throw Error(chalk.bold.red('The identity file does not exist.'));
+            }
+            const file = fs.readFileSync(identity, 'utf8');
+            data = JSON.parse(file);
+        }    
         const response = await api.create(data.username, data.claimType, data.claim);
-        console.log(chalk.bold.green('Created identity: '));
-        console.log(response);
+        console.error(chalk.bold.green('Created identity: '));
+        console.error(JSON.stringify(response, undefined, 2));
+        console.log(JSON.stringify(response, undefined, 2));
     } catch (e: any) {
         console.log(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));

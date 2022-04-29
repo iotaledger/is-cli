@@ -13,6 +13,7 @@ export const createChannel = async (name: string, options: { type: string; sourc
         console.log(chalk.bold.green('Created channel: '));
         console.log(response);
     } catch (e: any) {
+        console.log(e);
         console.log(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
     }

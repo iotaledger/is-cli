@@ -32,7 +32,7 @@ program
 //create did
 program
     .command('create-identity')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .option('-i, --identityFile <path-to-identity-file>')
     .description('Create a new DID with a .json file')
     .action(createIdentity);
 
