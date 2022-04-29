@@ -1,6 +1,6 @@
 {
     "name": "@iota/is-cli",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "main": "dist/index.js",
     "license": "Apache-2.0",
     "description": "CLI to interact with IOTA's Integration Services",
@@ -10,8 +10,7 @@
         "is": "bin/is.js"
     },
     "scripts": {
-        "install": "npm install -g .",
-        "package": "pkg . -t node16 --output iota-is-cli",
+        "test-install": "npm install -g .",
         "build": "tsc",
         "serve": "tsc --watch"
     },
@@ -38,7 +37,6 @@
         "@iota/is-client": "^0.1.2",
         "chalk": "^5.0.1",
         "commander": "^8.3.0",
-        "create-typescript-project": "^0.8.0",
         "nconf": "^0.11.3",
         "random-words": "^1.1.2",
         "yaml": "^1.10.2"
@@ -47,7 +45,7 @@
         "@types/nconf": "^0.10.2",
         "@types/node": "^16.0.1",
         "@types/random-words": "^1.1.2",
-        "pkg": "^5.5.2"
+        "typescript": "^4.6.4"
     },
     "files": [
         "bin/",

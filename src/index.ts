@@ -31,7 +31,7 @@ program
 
 //create did
 program
-    .option("-i, --identity <path>", "Identity file")
+    .option('-i, --identity <path>', 'Identity file')
     .description('Create a new DID with a .json file')
     .action(createIdentity);
 
@@ -139,7 +139,17 @@ program
     .description('Get data from the channel with address channel address.')
     .action(readChannel);
 
-program.command('setup-node').description('Setup environment for API').action(() => setupApi('node'));
-program.command('setup-docker').description('Setup environment for API').action(() => setupApi('docker'));
+program
+    .command('setup-node')
+    .description('Setup node environment for API')
+    .action(() => setupApi('node'));
+program
+    .command('setup-docker')
+    .description('Setup docker environment for API')
+    .action(() => setupApi('docker'));
 
-program.parse(process.argv);
+if (process.argv.length < 3) {
+    program.help();
+} else {
+    program.parse(process.argv);
+}
