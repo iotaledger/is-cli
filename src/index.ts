@@ -31,13 +31,14 @@ program
 
 //create did
 program
-    .option('-i, --identity <path>', 'Identity file')
+    .command('create-identity')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Create a new DID with a .json file')
     .action(createIdentity);
 
 // search dids by username
 program
-    .command('search-identiy <username>')
+    .command('search-identity <username>')
     .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Search users by username')
     .action(searchIdentity);
