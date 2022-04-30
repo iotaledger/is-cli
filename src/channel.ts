@@ -78,11 +78,12 @@ export const authorize = async (address: string, did: string, options: { identit
         return;
     }
     console.log(chalk.bold.green('Subscription found: authorizing...'));
-    await api.authorizeSubscription(address, {
+    let response = await api.authorizeSubscription(address, {
         subscriptionLink: subscription.subscriptionLink,
     	id: subscription.id
     })
     console.log(chalk.bold.green('Identity ' + did + " authorized"))
+    console.log(JSON.stringify(response, undefined, 2));
 }
 
 const getAuthenticatedApi = async (pathToIdentityFile: string): Promise<ChannelClient> => {
