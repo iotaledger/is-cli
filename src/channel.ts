@@ -1,8 +1,8 @@
-import { ApiVersion, ChannelClient, ClientConfig } from '@iota/is-client';
+import { ApiVersion, ChannelClient, ClientConfig, RequestSubscriptionResponse } from '@iota/is-client';
 import chalk from 'chalk';
 import fs from 'fs';
 import nconf from 'nconf';
-import os from 'os';
+import os, { type } from 'os';
 import path from 'path';
 
 export const createChannel = async (name: string, options: { type: string; source: string; identityFile: string }) => {
@@ -60,6 +60,30 @@ export const readChannel = async (
         if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
     }
 };
+
+export const subscribe = async (address: string, options: { identityFile: string }) => {
+    const { identityFile } = options;
+    const api = await getAuthenticatedApi(identityFile);
+    const subscription = await api.requestSubscription(address);
+    console.log(chalk.bold.green('Subscription'))
+    console.log(JSON.stringify(subscription, undefined, 2));
+}
+
+export const authorize = async (address: string, did: string, options: { identityFile: string })  => {
+    const { identityFile } = options;
+    const api = await getAuthenticatedApi(identityFile);
+    const subscription = await api.findSubscription(address, did);
+    if (!subscription) {
+        console.log(chalk.bold.green('Subscription not found'))
+        return;
+    }
+    console.log(chalk.bold.green('Subscription found: authorizing...'));
+    await api.authorizeSubscription(address, {
+        subscriptionLink: subscription.subscriptionLink,
+    	id: subscription.id
+    })
+    console.log(chalk.bold.green('Identity ' + did + " authorized"))
+}
 
 const getAuthenticatedApi = async (pathToIdentityFile: string): Promise<ChannelClient> => {
     let api = getApi();

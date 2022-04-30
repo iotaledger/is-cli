@@ -1,5 +1,5 @@
 import { program } from 'commander';
-import { createChannel, readChannel, writeChannel } from './channel.js';
+import { createChannel, readChannel, subscribe, authorize, writeChannel } from './channel.js';
 import { configure } from './config.js';
 import {
     addIdentity,
@@ -13,7 +13,7 @@ import {
     removeTrustedAuthority,
     revokeCredential,
     searchIdentity,
-    updateIdentity
+    updateIdentity,
 } from './identity.js';
 import { setupApi } from './setup-api.js';
 
@@ -139,6 +139,18 @@ program
     .option('-eD, --endDate <date>')
     .description('Get data from the channel with address channel address.')
     .action(readChannel);
+
+program
+    .command('subscribe-channel <address>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .description('Subscribe identity to channel specified by the address.')
+    .action(subscribe);
+
+program
+    .command('authorize-channel <address> <did>')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .description('Authorize an identity to write into the channel specified by the address.')
+    .action(authorize);
 
 program
     .command('setup-node')
