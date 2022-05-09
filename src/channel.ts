@@ -6,7 +6,7 @@ import os, { type } from 'os';
 import path from 'path';
 
 function answer(title: string, response: any) {
-    console.log(chalk.bold.green(title));
+    console.error(chalk.bold.green(title));
     console.error(JSON.stringify(response, undefined, 2));
     console.log(JSON.stringify(response, undefined, 2));
 }
