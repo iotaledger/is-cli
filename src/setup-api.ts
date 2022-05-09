@@ -10,13 +10,11 @@ export const setupApi = (type: string) => {
     const SSI_BRIDGE_FOLDER = 'ssi-bridge';
     const AUDIT_TRAIL_FOLDER = 'audit-trail-gw';
 
-    const currentPath = process.cwd().split('/');
-    const currentDirectory = currentPath[currentPath.length - 1];
     const foldersExist =
-        fs.existsSync(`${process.cwd()}/${AUDIT_TRAIL_FOLDER}`) &&
-        fs.existsSync(`${process.cwd()}/${SSI_BRIDGE_FOLDER}`);
-    if (currentDirectory !== API_FOLDER) {
-        return console.log(chalk.bold.red('Please navigate to the api folder'));
+        fs.existsSync(`${process.cwd()}/${API_FOLDER}/${AUDIT_TRAIL_FOLDER}`) &&
+        fs.existsSync(`${process.cwd()}/${API_FOLDER}/${SSI_BRIDGE_FOLDER}`);
+    if (!fs.existsSync(`${process.cwd()}/${API_FOLDER}`)) {
+        return console.log(chalk.bold.red('Please navigate to the integration services source folder'));
     }
     if (!foldersExist) {
         return console.log(
@@ -26,18 +24,22 @@ export const setupApi = (type: string) => {
     const dbUser = `${randomWord()}-${Math.floor(Math.random() * 100000)}`;
     const dbPassword = crypto.randomBytes(32).toString('hex');
     const dbUrl = type == 'node' ? '0.0.0.0' : 'mongo';
-    const secrets = crypto.randomBytes(24).toString('base64');
+    const server_secret = crypto.randomBytes(24).toString('base64');
+    const jwt_secret = crypto.randomBytes(24).toString('base64');
     const apiKey = crypto.randomUUID();
 
     fs.writeFileSync(`${process.cwd()}/mongo-init.js`, generateDbConfig(dbUser, dbPassword));
-    fs.writeFileSync(`${process.cwd()}/.env`, generateEnv(dbUser, dbPassword, dbUrl, secrets, secrets, apiKey, '3000'));
     fs.writeFileSync(
-        `${process.cwd()}/${AUDIT_TRAIL_FOLDER}/.env`,
-        generateEnv(dbUser, dbPassword, dbUrl, secrets, secrets, apiKey, '3002')
+        `${process.cwd()}/.env`,
+        generateEnv(dbUser, dbPassword, dbUrl, server_secret, jwt_secret, apiKey, '3000')
     );
     fs.writeFileSync(
-        `${process.cwd()}/${SSI_BRIDGE_FOLDER}/.env`,
-        generateEnv(dbUser, dbPassword, dbUrl, secrets, secrets, apiKey, '3001')
+        `${process.cwd()}/${API_FOLDER}/${AUDIT_TRAIL_FOLDER}/.env`,
+        generateEnv(dbUser, dbPassword, dbUrl, server_secret, jwt_secret, apiKey, '3002')
+    );
+    fs.writeFileSync(
+        `${process.cwd()}/${API_FOLDER}/${SSI_BRIDGE_FOLDER}/.env`,
+        generateEnv(dbUser, dbPassword, dbUrl, server_secret, jwt_secret, apiKey, '3001')
     );
     console.log(chalk.bold.green('Config has been setup'));
 };
