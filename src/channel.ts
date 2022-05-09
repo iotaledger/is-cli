@@ -5,13 +5,18 @@ import nconf from 'nconf';
 import os, { type } from 'os';
 import path from 'path';
 
+function answer(title: string, response: any) {
+    console.log(chalk.bold.green(title));
+    console.error(JSON.stringify(response, undefined, 2));
+    console.log(JSON.stringify(response, undefined, 2));
+}
+
 export const createChannel = async (name: string, options: { type: string; source: string; identityFile: string }) => {
     try {
         const { type, source, identityFile } = options;
         const api = await getAuthenticatedApi(identityFile);
         const response = await api?.create({ name, topics: [{ type, source }] });
-        console.log(chalk.bold.green('Created channel: '));
-        console.log(response);
+        answer('Created channel:', response);
     } catch (e: any) {
         console.log(e);
         console.log(chalk.bold.red(e.message));
@@ -24,8 +29,7 @@ export const writeChannel = async (address: string, options: { identityFile: str
         const { identityFile, payload } = options;
         const api = await getAuthenticatedApi(identityFile);
         const response = await api?.write(address, { payload });
-        console.log(chalk.bold.green('Message written to channel: ', address))
-        console.log(response);
+        answer('Message written to channel: ' + address, response);
     } catch (e: any) {
         console.log(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
@@ -65,8 +69,7 @@ export const subscribe = async (address: string, options: { identityFile: string
     const { identityFile } = options;
     const api = await getAuthenticatedApi(identityFile);
     const subscription = await api.requestSubscription(address);
-    console.log(chalk.bold.green('Subscription'))
-    console.log(JSON.stringify(subscription, undefined, 2));
+    answer('Subscription', subscription);
 }
 
 export const authorize = async (address: string, did: string, options: { identityFile: string })  => {
@@ -74,16 +77,15 @@ export const authorize = async (address: string, did: string, options: { identit
     const api = await getAuthenticatedApi(identityFile);
     const subscription = await api.findSubscription(address, did);
     if (!subscription) {
-        console.log(chalk.bold.green('Subscription not found'))
+        console.error(chalk.bold.green('Subscription not found'))
         return;
     }
-    console.log(chalk.bold.green('Subscription found: authorizing...'));
+    console.error(chalk.bold.green('Subscription found: authorizing...'));
     let response = await api.authorizeSubscription(address, {
         subscriptionLink: subscription.subscriptionLink,
     	id: subscription.id
     })
-    console.log(chalk.bold.green('Identity ' + did + " authorized"))
-    console.log(JSON.stringify(response, undefined, 2));
+    answer('Identity ' + did + " authorized", response);
 }
 
 const getAuthenticatedApi = async (pathToIdentityFile: string): Promise<ChannelClient> => {
