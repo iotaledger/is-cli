@@ -20,15 +20,9 @@ import { setupApi } from './setup-api.js';
 
 program
     .name("is")
+    .version('0.0.20', '-v, --vers', 'output the current version')
     .description("CLI to Integration Services APIs: manage Identities and Channels with ease.")
-
-program
-    .command('make-admin')
-    .description('Make an identity Admin: it is required access to the Kubernetes cluster. It works only with Helm IS charts')
-    .requiredOption('-i, --identity <DID of the identity to make Admin>')
-    .requiredOption('-d, --deployment <Name of the Helm chart>')
-    .option('-n, --namespace <Namespace>')
-    .action(makeAdmin);
+    .showSuggestionAfterError()
 
 program
     .command('config')
@@ -162,6 +156,14 @@ program
     .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Authorize an identity to write into the channel specified by the address.')
     .action(authorize);
+
+program
+    .command('make-admin')
+    .description('Assign Admin role to an identity.\nIt requires access to Integration Services deployment via kubectl.\nIntegration Services needs to be installed via Helm Chart.')
+    .requiredOption('-i, --identity <DID of the identity to make Admin>')
+    .requiredOption('-d, --deploymentName <Name of the deployed Helm chart>')
+    .option('-n, --namespace <Namespace>')
+    .action(makeAdmin);
 
 program
     .command('setup-node')

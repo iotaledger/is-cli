@@ -62,11 +62,11 @@ async function getISConfig(kc: KubeConfig, namespace: string, name: string) {
  * Launch a Job that will run a mongo script to update the Role of an
  * Identity to Admin.
  */
-export const makeAdmin = async (params: { identity: string, deployment: string, namespace?: string }) => {
+export const makeAdmin = async (params: { identity: string, deploymentName: string, namespace?: string }) => {
     const kc = new k8s.KubeConfig();
     kc.loadFromDefault();
     let namespace = params.namespace ? params.namespace : "default";
-    const infos = await getISConfig(kc, namespace, params.deployment) as any;
+    const infos = await getISConfig(kc, namespace, params.deploymentName) as any;
     if (!infos["DATABASE_URL"] || !infos["DATABASE_NAME"]) {
         console.error(chalk.bold.green("Impossible to retrieve Integration Service info"))
         console.error(chalk.bold.green("Please, be sure that Integration Services was installed"))
