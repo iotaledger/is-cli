@@ -1,5 +1,6 @@
 import { program } from 'commander';
 import { createChannel, readChannel, subscribe, authorize, writeChannel } from './channel.js';
+import { makeAdmin } from './admin.js';
 import { configure } from './config.js';
 import {
     addIdentity,
@@ -17,16 +18,26 @@ import {
 } from './identity.js';
 import { setupApi } from './setup-api.js';
 
-program.version('0.1.0');
+program
+    .name("is")
+    .description("CLI to Integration Services APIs: manage Identities and Channels with ease.")
+
+program
+    .command('make-admin')
+    .description('Make an identity Admin: it is required access to the Kubernetes cluster. It works only with Helm IS charts')
+    .requiredOption('-i, --identity <DID of the identity to make Admin>')
+    .requiredOption('-d, --deployment <Name of the Helm chart>')
+    .option('-n, --namespace <Namespace>')
+    .action(makeAdmin);
 
 program
     .command('config')
+    .description('Configure CLI to reach out the API endpoints')
     .option('-s, --ssiBridgeUrl <SSI Bridge URL>')
     .option('-a, --auditTrailUrl <Audit Trail URL>')
     .option('-g, --isGatewayUrl <Gateway URL>')
     .option('-k, --apiKey <api Key>')
     .option('-v, --apiVersion <api version>')
-    .description('Configure CLI with the API endpoints')
     .action(configure);
 
 //create did
