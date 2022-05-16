@@ -76,7 +76,7 @@ export const makeAdmin = async (params: { identity: string, deploymentName: stri
     const job = createMakeAdminJob(params.identity, infos["DATABASE_URL"], infos["DATABASE_NAME"]);
     const k8sApi = k8s.KubernetesObjectApi.makeApiClient(kc);
     await k8sApi.create(job);
-    console.error(chalk.bold.blue(`Identity ${params.identity} (if exists) is now Admin (i.e. it can issue verifiable credentials)`));
-    console.error(chalk.bold.blue(`You can clean up old "make-admin" commands with the following:`));
-    console.error(chalk.bold.green(`kubectl delete job -n ${namespace} --selector "iota/cli=make-admin"`));
+    console.log(chalk.bold.blue(`Identity ${params.identity} (if exists) is now Admin (i.e. it can issue verifiable credentials)`));
+    console.log(chalk.bold.blue(`You can clean up old "make-admin" commands with the following:`));
+    console.log(chalk.bold.green(`kubectl delete job -n ${namespace} --selector "iota/cli=make-admin"`));
 }
