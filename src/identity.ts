@@ -149,19 +149,19 @@ export const removeTrustedAuthority = async (authorityId: string, options: { ide
 };
 
 export const parseInput = (fileName?: string) => {
-    let data = undefined;
+    // If file is missing, input is taken consuming input stream
     if (!fileName) {
-        data = JSON.parse(fs.readFileSync(0, 'utf-8'));
+        return JSON.parse(fs.readFileSync(0, 'utf-8'));
     }
-    else {
-        if (!fs.existsSync(fileName)) {
-            console.log(chalk.bold.red("The credential file does not exist."));
-            return;
-        }
-        const file = fs.readFileSync(fileName, 'utf8');
-        data = JSON.parse(file);
+
+    // If file doesn't exist exit with error
+    if (!fs.existsSync(fileName)) {
+        console.log(chalk.bold.red("The credential file does not exist."));
+        return;
     }
-    return data;
+
+    // Get input from specified file
+    return JSON.parse(fs.readFileSync(fileName, 'utf8'));
 }
 
 export const createCredential = async (options: { identityFile: string; did: string, credential?: string }) => {
