@@ -172,12 +172,15 @@ export const createCredential = async (options: { identityFile: string; did: str
         let error = false;
         if (!credentialType) {
             console.log(chalk.bold.red("credentialType not present in credential file"));
+            error = true;
         }
         if (!claimType) {
             console.log(chalk.bold.red("claimType not present in credential file"));
+            error = true;
         }
         if (!claim) {
             console.log(chalk.bold.red("claim not present in credential file"));
+            error = true;
         }
         if (error) {
             return;
