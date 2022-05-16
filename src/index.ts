@@ -6,6 +6,7 @@ import {
     addIdentity,
     addTrustedAuthority,
     checkCredential,
+    createCredential,
     createIdentity,
     findIdentity,
     getTrustedAuthorities,
@@ -105,9 +106,18 @@ program
     .description('Remove trusted root identity by id')
     .action(removeTrustedAuthority);
 
+//create verifiable credential
+program
+    .command('create-vc')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .requiredOption('-d, --did <Target DID for the VC>')
+    .option('-c, --credential <path-to-credential-file-definition> (or stdin)')
+    .description('Create a new VC')
+    .action(createCredential);
+
 //check verifiable credential
 program
-    .command('check-vc <credentialFile')
+    .command('check-vc <credentialFile>')
     .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Check the verifiable credential of an identity')
     .action(checkCredential);

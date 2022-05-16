@@ -148,6 +148,64 @@ export const removeTrustedAuthority = async (authorityId: string, options: { ide
     }
 };
 
+export const parseInput = (fileName?: string) => {
+    let data = undefined;
+    if (!fileName) {
+        data = JSON.parse(fs.readFileSync(0, 'utf-8'));
+    }
+    else {
+        if (!fs.existsSync(fileName)) {
+            console.log(chalk.bold.red("The credential file does not exist."));
+            return;
+        }
+        const file = fs.readFileSync(fileName, 'utf8');
+        data = JSON.parse(file);
+    }
+    return data;
+}
+
+export const createCredential = async (options: { identityFile: string; did: string, credential?: string }) => {
+    try {
+        const { identityFile, did, credential } = options;
+        let credentialData = parseInput(credential);
+        const { credentialType, claimType, claim } = credentialData;
+        let error = false;
+        if (!credentialType) {
+            console.log(chalk.bold.red("credentialType not present in credential file"));
+        }
+        if (!claimType) {
+            console.log(chalk.bold.red("claimType not present in credential file"));
+        }
+        if (!claim) {
+            console.log(chalk.bold.red("claim not present in credential file"));
+        }
+        if (error) {
+            return;
+        }
+        const api = await getAuthenticatedApi(identityFile);
+
+        let identityJSON = JSON.parse(fs.readFileSync(identityFile, { encoding: 'utf8', flag: 'r' }));
+        const adminIdentityPublic = await api.find(identityJSON.doc.id);
+        const identityCredential = adminIdentityPublic?.verifiableCredentials?.[0];
+        
+        const response = await api.createCredential(
+            identityCredential,
+            did,
+            credentialType,
+            claimType,
+            claim
+        );
+        console.error(chalk.bold.green('Created Verifiable Credential: '));
+        console.error(JSON.stringify(response, undefined, 2));
+        console.log(JSON.stringify(response, undefined, 2));
+    }
+    catch (e: any) {
+        console.log(e)
+        console.log(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+    }
+}
+
 export const checkCredential = async (credentialFile: string, options: { identityFile: string; }) => {
     try {
         const api = await getAuthenticatedApi(options.identityFile);
