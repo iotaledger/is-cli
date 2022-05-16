@@ -38,21 +38,22 @@ program
 //create did
 program
     .command('create-identity')
-    .option('-i, --identityFile <path-to-identity-file>')
+    .requiredOption('-o, --outputFile <File where write the new Identity>')
+    .option('-i, --identityFile <File with the identity Claim or stdin>')
     .description('Create a new DID with a .json file')
     .action(createIdentity);
 
 // search dids by username
 program
     .command('search-identity <username>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .requiredOption('-i, --identityFile <Identity file>')
     .description('Search users by username')
     .action(searchIdentity);
 
 //find did by id
 program
     .command('find-identity <identityId>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .requiredOption('-i, --identityFile <Identity file>')
     .description('Find identity by identity id')
     .action(findIdentity);
 
@@ -111,7 +112,8 @@ program
     .command('create-vc')
     .requiredOption('-i, --identityFile <path-to-identity-file>')
     .requiredOption('-d, --did <Target DID for the VC>')
-    .option('-c, --credential <path-to-credential-file-definition> (or stdin)')
+    .requiredOption('-o, --outputFile <File where write the VC>')
+    .option('-c, --credential <Credential claim file> (or stdin)')
     .description('Create a new VC')
     .action(createCredential);
 
@@ -134,6 +136,7 @@ program
     .requiredOption('-i, --identityFile <path-to-identity-file>')
     .requiredOption('-t, --type <type-of-channel>')
     .requiredOption('-s, --source <source-of-channel>')
+    .option('-o, --outputFile <File where write the new Identity>')
     .description('Create a channel')
     .action(createChannel);
 

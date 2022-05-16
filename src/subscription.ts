@@ -34,34 +34,6 @@ exports.findById = async (
     }
 };
 
-exports.request = async (
-    channelAddress: string,
-    options: { config: string; identity: string; requestSubscriptionBody: string }
-) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const data = fs.readFileSync(options.requestSubscriptionBody, 'utf8');
-        const response = await api?.requestSubscription(channelAddress, JSON.parse(data));
-        console.log(response);
-    } catch (ex: any) {
-        console.log(ex);
-    }
-};
-
-exports.authorize = async (
-    channelAddress: string,
-    options: { config: string; identity: string; authorizeSubscriptionBody: string }
-) => {
-    try {
-        const api = await getAuthenticatedApi(options.identity);
-        const data = fs.readFileSync(options.authorizeSubscriptionBody, 'utf8');
-        const response = await api?.authorizeSubscription(channelAddress, JSON.parse(data));
-        console.log(response);
-    } catch (ex: any) {
-        console.log(ex);
-    }
-};
-
 exports.revoke = async (
     channelAddress: string,
     options: { config: string; identity: string; revokeSubscriptionBody: string }
