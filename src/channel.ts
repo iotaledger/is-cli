@@ -4,7 +4,7 @@ import fs from 'fs';
 import nconf from 'nconf';
 import os, { type } from 'os';
 import path from 'path';
-import { writeOutput } from './utils';
+import { writeOutput } from './utils.js';
 
 export const createChannel = async (name: string, options: { type: string; source: string; identityFile: string, outputFile?: string }) => {
     try {

@@ -1,6 +1,6 @@
 {
     "name": "@iota/is-cli",
-    "version": "0.0.20",
+    "version": "0.0.21",
     "main": "dist/index.js",
     "license": "Apache-2.0",
     "description": "CLI to interact with IOTA's Integration Services",

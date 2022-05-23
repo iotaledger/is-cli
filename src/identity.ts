@@ -4,7 +4,7 @@ import fs from 'fs';
 import nconf from 'nconf';
 import os from 'os';
 import path from 'path';
-import { parseInput, writeOutput } from './utils';
+import { parseInput, writeOutput } from './utils.js';
 
 export const createIdentity = async (params: { identity?: string, outputFile: string }) => {
     const { identity, outputFile } = params;
