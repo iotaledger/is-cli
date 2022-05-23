@@ -1,32 +1,21 @@
-import { IdentityClient, ApiVersion, ClientConfig } from '@iota/is-client';
+import { IdentityClient, ClientConfig } from '@iota/is-client';
 import chalk from 'chalk';
 import fs from 'fs';
 import nconf from 'nconf';
 import os from 'os';
 import path from 'path';
+import { parseInput, writeOutput } from './utils';
 
-export const createIdentity = async (params: { identity?: string }) => {
-    const { identity } = params;
+export const createIdentity = async (params: { identity?: string, outputFile: string }) => {
+    const { identity, outputFile } = params;
     try {
         const api = getApi();
-        let data = undefined;
-        if (!identity) {
-            data = JSON.parse(fs.readFileSync(0, 'utf-8'));
-        }
-        else {
-            if (!fs.existsSync(identity)) {
-                throw Error(chalk.bold.red('The identity file does not exist.'));
-            }
-            const file = fs.readFileSync(identity, 'utf8');
-            data = JSON.parse(file);
-        }    
+        let data = parseInput(identity);
         const response = await api.create(data.username, data.claimType, data.claim);
-        console.error(chalk.bold.green('Created identity: '));
-        console.error(JSON.stringify(response, undefined, 2));
-        console.log(JSON.stringify(response, undefined, 2));
+        writeOutput("Identity created:", response, outputFile);
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -37,8 +26,8 @@ export const searchIdentity = async (username: string, options: { identityFile: 
         console.log(chalk.bold.green('Searched identities: '));
         console.log(JSON.stringify(response, null, 2));
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -52,14 +41,13 @@ export const findIdentity = async (identityId: any, options: { identityFile: str
         console.log(chalk.bold.green('Found identity: '));
         console.log(JSON.stringify(response, null, 2));
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
 export const addIdentity = async (pathToAddIdentityFile: string, options: { identityFile: string }) => {
     try {
-        console.log(pathToAddIdentityFile, options);
         const api = await getAuthenticatedApi(options.identityFile);
         if (!fs.existsSync(pathToAddIdentityFile)) {
             throw Error(chalk.bold.red('The identity file does not exist.'));
@@ -68,8 +56,8 @@ export const addIdentity = async (pathToAddIdentityFile: string, options: { iden
         await api?.add(JSON.parse(file));
         console.log(chalk.bold.green('Added identity to bridge.'));
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -79,8 +67,8 @@ export const removeIdentity = async (identityId: string, options: { identityFile
         options.revoke ? await api?.remove(identityId, true) : await api?.remove(identityId);
         console.log(chalk.bold.green(`Identity with identity id '${identityId}' removed.`));
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -94,8 +82,8 @@ export const updateIdentity = async (updateFile: string, options: { identityFile
         await api?.update(JSON.parse(file));
         console.log(chalk.bold.green('Identity updated with data: ', updateFile));
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -107,7 +95,7 @@ export const latestDocument = async (identityId: string, options: { identityFile
             return console.log(chalk.bold.red('No identity found with identity id: ', identityId));
         }
         console.log(chalk.bold.green('Found identity'));
-        console.log(response);
+        console.log(JSON.stringify(response, null, 2));
     } catch (e: any) {
         console.log(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
@@ -119,10 +107,10 @@ export const getTrustedAuthorities = async (options: { identityFile: string }) =
         const api = await getAuthenticatedApi(options.identityFile);
         const response = await api?.getTrustedAuthorities();
         console.log(chalk.bold.green('Trusted authorities: '));
-        console.log(response);
+        console.log(JSON.stringify(response, null, 2));
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -132,8 +120,8 @@ export const addTrustedAuthority = async (authorityId: string, options: { identi
         await api?.addTrustedAuthority(authorityId);
         console.log(chalk.bold.green(`Added identity with identity id '${authorityId}' as a trusted root.`));
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -143,10 +131,52 @@ export const removeTrustedAuthority = async (authorityId: string, options: { ide
         await api?.removeTrustedAuthority(authorityId);
         console.log(chalk.bold.green(`Removed identity with identity id '${authorityId}' from trusted roots.`));
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
+
+export const createCredential = async (options: { identityFile: string; did: string, credential?: string, outputFile: string }) => {
+    try {
+        const { identityFile, did, credential, outputFile } = options;
+        let credentialData = parseInput(credential);
+        const { credentialType, claimType, claim } = credentialData;
+        let error = false;
+        if (!credentialType) {
+            console.error(chalk.bold.red("credentialType not present in credential file"));
+            error = true;
+        }
+        if (!claimType) {
+            console.error(chalk.bold.red("claimType not present in credential file"));
+            error = true;
+        }
+        if (!claim) {
+            console.error(chalk.bold.red("claim not present in credential file"));
+            error = true;
+        }
+        if (error) {
+            return;
+        }
+        const api = await getAuthenticatedApi(identityFile);
+
+        let identityJSON = JSON.parse(fs.readFileSync(identityFile, { encoding: 'utf8', flag: 'r' }));
+        const adminIdentityPublic = await api.find(identityJSON.doc.id);
+        const identityCredential = adminIdentityPublic?.verifiableCredentials?.[0];
+        
+        const response = await api.createCredential(
+            identityCredential,
+            did,
+            credentialType,
+            claimType,
+            claim
+        );
+        writeOutput('Created Verifiable Credential:', response, outputFile)
+    }
+    catch (e: any) {
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
+    }
+}
 
 export const checkCredential = async (credentialFile: string, options: { identityFile: string; }) => {
     try {
@@ -156,11 +186,11 @@ export const checkCredential = async (credentialFile: string, options: { identit
       }
         const file = fs.readFileSync(credentialFile, 'utf-8');
         const response = await api?.checkCredential(JSON.parse(file));
-        console.log(chalk.bold.green('Verification result: '))
-        console.log(response);
+        console.log(chalk.bold.green('Verification result:'))
+        console.log(JSON.stringify(response, null, 2));
     } catch (e: any) {
-      console.log(chalk.bold.red(e.message));
-      if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+      console.error(chalk.bold.red(e.message));
+      if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -170,8 +200,8 @@ export const revokeCredential = async (signatureValue: string, options: { identi
         await api?.revokeCredential({ signatureValue });
         console.log(chalk.bold.green('Revoked credential.'));
     } catch (e: any) {
-      console.log(chalk.bold.red(e.message));
-      if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+      console.error(chalk.bold.red(e.message));
+      if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 

@@ -1,26 +1,20 @@
-import { ApiVersion, ChannelClient, ClientConfig, RequestSubscriptionResponse } from '@iota/is-client';
+import { ChannelClient, ClientConfig, RequestSubscriptionResponse } from '@iota/is-client';
 import chalk from 'chalk';
 import fs from 'fs';
 import nconf from 'nconf';
 import os, { type } from 'os';
 import path from 'path';
+import { writeOutput } from './utils';
 
-function answer(title: string, response: any) {
-    console.error(chalk.bold.green(title));
-    console.error(JSON.stringify(response, undefined, 2));
-    console.log(JSON.stringify(response, undefined, 2));
-}
-
-export const createChannel = async (name: string, options: { type: string; source: string; identityFile: string }) => {
+export const createChannel = async (name: string, options: { type: string; source: string; identityFile: string, outputFile?: string }) => {
     try {
-        const { type, source, identityFile } = options;
+        const { type, source, identityFile, outputFile } = options;
         const api = await getAuthenticatedApi(identityFile);
         const response = await api?.create({ name, topics: [{ type, source }] });
-        answer('Created channel:', response);
+        writeOutput('Created channel:', response, outputFile);
     } catch (e: any) {
-        console.log(e);
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -29,10 +23,10 @@ export const writeChannel = async (address: string, options: { identityFile: str
         const { identityFile, payload } = options;
         const api = await getAuthenticatedApi(identityFile);
         const response = await api?.write(address, { payload });
-        answer('Message written to channel: ' + address, response);
+        writeOutput('Message written to channel: ' + address, response);
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -48,7 +42,7 @@ export const readChannel = async (
     }
 ) => {
     try {
-        const {identityFile, limit, index, asc, startDate, endDate} = options;
+        const { identityFile, limit, index, asc, startDate, endDate } = options;
         const api = await getAuthenticatedApi(identityFile);
         const response = await api?.read(address, {
             limit: limit ? Number(limit) : undefined,
@@ -57,35 +51,44 @@ export const readChannel = async (
             startDate: startDate ? new Date(startDate) : undefined,
             endDate: endDate ? new Date(endDate) : undefined
         });
-        console.log(chalk.bold.green('Channel data'))
-        console.log(response);
+        writeOutput('Channel data:', response);
     } catch (e: any) {
-        console.log(chalk.bold.red(e.message));
-        if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
 export const subscribe = async (address: string, options: { identityFile: string }) => {
-    const { identityFile } = options;
-    const api = await getAuthenticatedApi(identityFile);
-    const subscription = await api.requestSubscription(address);
-    answer('Subscription', subscription);
+    try {
+        const { identityFile } = options;
+        const api = await getAuthenticatedApi(identityFile);
+        const subscription = await api.requestSubscription(address);
+        writeOutput('Subscription', subscription);
+    } catch (e: any) {
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
+    }
 }
 
-export const authorize = async (address: string, did: string, options: { identityFile: string })  => {
-    const { identityFile } = options;
-    const api = await getAuthenticatedApi(identityFile);
-    const subscription = await api.findSubscription(address, did);
-    if (!subscription) {
-        console.error(chalk.bold.green('Subscription not found'))
-        return;
+export const authorize = async (address: string, did: string, options: { identityFile: string }) => {
+    try {
+        const { identityFile } = options;
+        const api = await getAuthenticatedApi(identityFile);
+        const subscription = await api.findSubscription(address, did);
+        if (!subscription) {
+            console.error(chalk.bold.green('Subscription not found'))
+            return;
+        }
+        console.error(chalk.bold.green('Subscription found: authorizing...'));
+        let response = await api.authorizeSubscription(address, {
+            subscriptionLink: subscription.subscriptionLink,
+            id: subscription.id
+        })
+        writeOutput('Identity ' + did + " authorized", response);
+    } catch (e: any) {
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
-    console.error(chalk.bold.green('Subscription found: authorizing...'));
-    let response = await api.authorizeSubscription(address, {
-        subscriptionLink: subscription.subscriptionLink,
-    	id: subscription.id
-    })
-    answer('Identity ' + did + " authorized", response);
 }
 
 const getAuthenticatedApi = async (pathToIdentityFile: string): Promise<ChannelClient> => {

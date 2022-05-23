@@ -1,10 +1,12 @@
 import { program } from 'commander';
 import { createChannel, readChannel, subscribe, authorize, writeChannel } from './channel.js';
+import { makeAdmin } from './admin.js';
 import { configure } from './config.js';
 import {
     addIdentity,
     addTrustedAuthority,
     checkCredential,
+    createCredential,
     createIdentity,
     findIdentity,
     getTrustedAuthorities,
@@ -17,22 +19,27 @@ import {
 } from './identity.js';
 import { setupApi } from './setup-api.js';
 
-program.version('0.1.0');
+program
+    .name("is")
+    .version('0.0.20', '-v, --vers', 'output the current version')
+    .description("CLI to Integration Services APIs: manage Identities and Channels with ease.")
+    .showSuggestionAfterError()
 
 program
     .command('config')
+    .description('Configure CLI to reach out the API endpoints')
     .option('-s, --ssiBridgeUrl <SSI Bridge URL>')
     .option('-a, --auditTrailUrl <Audit Trail URL>')
     .option('-g, --isGatewayUrl <Gateway URL>')
     .option('-k, --apiKey <api Key>')
     .option('-v, --apiVersion <api version>')
-    .description('Configure CLI with the API endpoints')
     .action(configure);
 
 //create did
 program
     .command('create-identity')
-    .option('-i, --identityFile <path-to-identity-file>')
+    .requiredOption('-o, --outputFile <File where write the new Identity>')
+    .option('-i, --identityFile <path-to-identity-claim-file or stdin>')
     .description('Create a new DID with a .json file')
     .action(createIdentity);
 
@@ -100,9 +107,19 @@ program
     .description('Remove trusted root identity by id')
     .action(removeTrustedAuthority);
 
+//create verifiable credential
+program
+    .command('create-vc')
+    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .requiredOption('-d, --did <Target DID for the VC>')
+    .requiredOption('-o, --outputFile <File where write the VC>')
+    .option('-c, --credential <path-to-credential-claim-file (or stdin)>')
+    .description('Create a new VC')
+    .action(createCredential);
+
 //check verifiable credential
 program
-    .command('check-vc <credentialFile')
+    .command('check-vc <credentialFile>')
     .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Check the verifiable credential of an identity')
     .action(checkCredential);
@@ -119,6 +136,7 @@ program
     .requiredOption('-i, --identityFile <path-to-identity-file>')
     .requiredOption('-t, --type <type-of-channel>')
     .requiredOption('-s, --source <source-of-channel>')
+    .requiredOption('-o, --outputFile <File where write the new Identity>')
     .description('Create a channel')
     .action(createChannel);
 
@@ -151,6 +169,14 @@ program
     .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Authorize an identity to write into the channel specified by the address.')
     .action(authorize);
+
+program
+    .command('make-admin')
+    .description('Assign Admin role to an identity.\nIt requires access to Integration Services deployment via kubectl.\nIntegration Services needs to be installed via Helm Chart.')
+    .requiredOption('-i, --identity <DID of the identity to make Admin>')
+    .requiredOption('-d, --deploymentName <Name of the deployed Helm chart>')
+    .option('-n, --namespace <Namespace>')
+    .action(makeAdmin);
 
 program
     .command('setup-node')
