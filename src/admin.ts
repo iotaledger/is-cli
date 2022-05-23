@@ -38,7 +38,7 @@ async function getISConfigMap(kc: KubeConfig, namespace: string, name: string) {
     const response = await k8sApiCore.listNamespacedConfigMap(namespace)
     return response.body.items.filter(item => {
         const anns = item.metadata?.annotations;
-        if (anns && anns['meta.helm.sh/release-name'] && anns['meta.helm.sh/release-name'] === name) {
+        if (anns && anns['meta.helm.sh/release-name'] === name) {
             return true
         }
         return false;

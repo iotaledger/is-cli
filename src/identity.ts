@@ -136,9 +136,9 @@ export const removeTrustedAuthority = async (authorityId: string, options: { ide
     }
 };
 
-export const createCredential = async (options: { identityFile: string; did: string, credential?: string, outoutFile: string }) => {
+export const createCredential = async (options: { identityFile: string; did: string, credential?: string, outputFile: string }) => {
     try {
-        const { identityFile, did, credential, outoutFile } = options;
+        const { identityFile, did, credential, outputFile } = options;
         let credentialData = parseInput(credential);
         const { credentialType, claimType, claim } = credentialData;
         let error = false;
@@ -170,7 +170,7 @@ export const createCredential = async (options: { identityFile: string; did: str
             claimType,
             claim
         );
-        writeOutput('Created Verifiable Credential:', response, outoutFile)
+        writeOutput('Created Verifiable Credential:', response, outputFile)
     }
     catch (e: any) {
         console.error(chalk.bold.red(e.message));
