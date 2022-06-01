@@ -6,11 +6,11 @@ import os from 'os';
 import path from 'path';
 import { parseInput, writeOutput } from './utils.js';
 
-export const createIdentity = async (params: { identity?: string, outputFile: string }) => {
-    const { identity, outputFile } = params;
+export const createIdentity = async (params: { identityFile?: string, outputFile: string }) => {
+    const { identityFile, outputFile } = params;
     try {
         const api = getApi();
-        let data = parseInput(identity);
+        let data =  await parseInput(identityFile);
         const response = await api.create(data.username, data.claimType, data.claim);
         writeOutput("Identity created:", response, outputFile);
     } catch (e: any) {
@@ -19,27 +19,27 @@ export const createIdentity = async (params: { identity?: string, outputFile: st
     }
 };
 
-export const searchIdentity = async (username: string, options: { identityFile: string }) => {
+export const searchIdentity = async (username: string, options: { identityFile: string, outputFile: string }) => {
     try {
-        const api = await getAuthenticatedApi(options.identityFile);
+        const { identityFile, outputFile } = options;
+        const api = await getAuthenticatedApi(identityFile);
         const response = await api?.search({ username });
-        console.log(chalk.bold.green('Searched identities: '));
-        console.log(JSON.stringify(response, null, 2));
+        writeOutput('Searched identities: ', response, outputFile);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
-export const findIdentity = async (identityId: any, options: { identityFile: string }) => {
+export const findIdentity = async (identityId: any, options: { identityFile: string, outputFile: string }) => {
     try {
-        const api = await getAuthenticatedApi(options.identityFile);
+        const { identityFile, outputFile } = options
+        const api = await getAuthenticatedApi(identityFile);
         const response = await api?.find(identityId);
         if (!response) {
             return console.log(chalk.bold.red('No identity found with identity id: ', identityId));
         }
-        console.log(chalk.bold.green('Found identity: '));
-        console.log(JSON.stringify(response, null, 2));
+        writeOutput('Found identity: ', response, outputFile)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
@@ -48,24 +48,22 @@ export const findIdentity = async (identityId: any, options: { identityFile: str
 
 export const addIdentity = async (pathToAddIdentityFile: string, options: { identityFile: string }) => {
     try {
+        const identity = parseInput(pathToAddIdentityFile);
         const api = await getAuthenticatedApi(options.identityFile);
-        if (!fs.existsSync(pathToAddIdentityFile)) {
-            throw Error(chalk.bold.red('The identity file does not exist.'));
-        }
-        const file = fs.readFileSync(pathToAddIdentityFile, 'utf8');
-        await api?.add(JSON.parse(file));
-        console.log(chalk.bold.green('Added identity to bridge.'));
+        await api?.add(identity);
+        writeOutput('Added identity to bridge.');
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
-export const removeIdentity = async (identityId: string, options: { identityFile: string; revoke: boolean }) => {
+export const removeIdentity = async (identityId: string, options: { identityFile: string; revokeCredential: boolean }) => {
     try {
-        const api = await getAuthenticatedApi(options.identityFile);
-        options.revoke ? await api?.remove(identityId, true) : await api?.remove(identityId);
-        console.log(chalk.bold.green(`Identity with identity id '${identityId}' removed.`));
+        const { identityFile, revokeCredential } = options;
+        const api = await getAuthenticatedApi(identityFile);
+        revokeCredential ? await api?.remove(identityId, true) : await api?.remove(identityId);
+        writeOutput(`Identity with identity id '${identityId}' removed.`);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
@@ -74,40 +72,37 @@ export const removeIdentity = async (identityId: string, options: { identityFile
 
 export const updateIdentity = async (updateFile: string, options: { identityFile: string }) => {
     try {
+        const updateIdentity = parseInput(updateFile);
         const api = await getAuthenticatedApi(options.identityFile);
-        if (!fs.existsSync(updateFile)) {
-            throw Error(chalk.bold.red('The update identity file does not exist.'));
-        }
-        const file = fs.readFileSync(updateFile, 'utf8');
-        await api?.update(JSON.parse(file));
-        console.log(chalk.bold.green('Identity updated with data: ', updateFile));
+        await api?.update(updateIdentity);
+        writeOutput('Identity updated with data: ', updateFile);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
-export const latestDocument = async (identityId: string, options: { identityFile: string }) => {
+export const latestDocument = async (identityId: string, options: { identityFile: string, outputFile: string }) => {
     try {
-        const api = await getAuthenticatedApi(options.identityFile);
+        const { identityFile, outputFile } = options;
+        const api = await getAuthenticatedApi(identityFile);
         const response = await api?.latestDocument(identityId);
         if (!response) {
             return console.log(chalk.bold.red('No identity found with identity id: ', identityId));
         }
-        console.log(chalk.bold.green('Found identity'));
-        console.log(JSON.stringify(response, null, 2));
+        writeOutput('Found identity', response, outputFile);
     } catch (e: any) {
         console.log(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.log(chalk.bold.red(e.response.data.error));
     }
 };
 
-export const getTrustedAuthorities = async (options: { identityFile: string }) => {
+export const getTrustedAuthorities = async (options: { identityFile: string, outputFile: string }) => {
     try {
-        const api = await getAuthenticatedApi(options.identityFile);
+        const { identityFile, outputFile } = options
+        const api = await getAuthenticatedApi(identityFile);
         const response = await api?.getTrustedAuthorities();
-        console.log(chalk.bold.green('Trusted authorities: '));
-        console.log(JSON.stringify(response, null, 2));
+        writeOutput('Trusted authorities: ', response, outputFile);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
@@ -118,7 +113,7 @@ export const addTrustedAuthority = async (authorityId: string, options: { identi
     try {
         const api = await getAuthenticatedApi(options.identityFile);
         await api?.addTrustedAuthority(authorityId);
-        console.log(chalk.bold.green(`Added identity with identity id '${authorityId}' as a trusted root.`));
+        writeOutput(`Added identity with identity id '${authorityId}' as a trusted root.`);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
@@ -129,17 +124,17 @@ export const removeTrustedAuthority = async (authorityId: string, options: { ide
     try {
         const api = await getAuthenticatedApi(options.identityFile);
         await api?.removeTrustedAuthority(authorityId);
-        console.log(chalk.bold.green(`Removed identity with identity id '${authorityId}' from trusted roots.`));
+        writeOutput(`Removed identity with identity id '${authorityId}' from trusted roots.`);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
-export const createCredential = async (options: { identityFile: string; did: string, credential?: string, outputFile: string }) => {
+export const createCredential = async (options: { identityFile: string; did: string, credentialFile?: string, outputFile: string }) => {
     try {
-        const { identityFile, did, credential, outputFile } = options;
-        let credentialData = parseInput(credential);
+        const { identityFile, did, credentialFile, outputFile } = options;
+        let credentialData = parseInput(credentialFile);
         const { credentialType, claimType, claim } = credentialData;
         let error = false;
         if (!credentialType) {
@@ -159,10 +154,10 @@ export const createCredential = async (options: { identityFile: string; did: str
         }
         const api = await getAuthenticatedApi(identityFile);
 
-        let identityJSON = JSON.parse(fs.readFileSync(identityFile, { encoding: 'utf8', flag: 'r' }));
-        const adminIdentityPublic = await api.find(identityJSON.doc.id);
+        let identity = parseInput(identityFile);
+        const adminIdentityPublic = await api.find(identity.doc.id);
         const identityCredential = adminIdentityPublic?.verifiableCredentials?.[0];
-        
+
         const response = await api.createCredential(
             identityCredential,
             did,
@@ -180,17 +175,13 @@ export const createCredential = async (options: { identityFile: string; did: str
 
 export const checkCredential = async (credentialFile: string, options: { identityFile: string; }) => {
     try {
+        const credential = parseInput(credentialFile);
         const api = await getAuthenticatedApi(options.identityFile);
-        if (!fs.existsSync(credentialFile)) {
-          throw Error(chalk.bold.red('The update identity file does not exist.'));
-      }
-        const file = fs.readFileSync(credentialFile, 'utf-8');
-        const response = await api?.checkCredential(JSON.parse(file));
-        console.log(chalk.bold.green('Verification result:'))
-        console.log(JSON.stringify(response, null, 2));
+        const response = await api?.checkCredential(credential);
+        writeOutput('Verification result: ', response);
     } catch (e: any) {
-      console.error(chalk.bold.red(e.message));
-      if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
@@ -198,21 +189,44 @@ export const revokeCredential = async (signatureValue: string, options: { identi
     try {
         const api = await getAuthenticatedApi(options.identityFile);
         await api?.revokeCredential({ signatureValue });
-        console.log(chalk.bold.green('Revoked credential.'));
+        writeOutput('Revoked credential.');
     } catch (e: any) {
-      console.error(chalk.bold.red(e.message));
-      if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
-const getAuthenticatedApi = async (pathToIdentityFile: string): Promise<IdentityClient> => {
-    let api = getApi();
-    if (!fs.existsSync(pathToIdentityFile)) {
-        throw Error(chalk.bold.red('The identity file does not exist.'));
+export const getJwt = async (options: { identityFile: string, outputFile: string }) => {
+    try {
+        const { identityFile, outputFile } = options;
+        const api = await getAuthenticatedApi(identityFile);
+        writeOutput('Returned JWT: ', api?.jwtToken, outputFile);
+    } catch (e: any) {
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
+}
+
+export const verifyJwt = async (jwt: string, options: { identityFile: string; }) => {
+    try {
+        const api = await getAuthenticatedApi(options.identityFile);
+        const response = await api?.verifyJwt({ jwt });
+        if (response?.isValid) {
+            console.log(chalk.bold.green('JWT is valid.'));
+        } else {
+            console.log(chalk.bold.red(response?.error));
+        }
+    } catch (e: any) {
+        console.error(chalk.bold.red(e.message));
+        if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
+    }
+};
+
+const getAuthenticatedApi = async (identityFile: string): Promise<IdentityClient> => {
+    let api = getApi();
     let identity;
     try {
-        identity = JSON.parse(fs.readFileSync(pathToIdentityFile, { encoding: 'utf8', flag: 'r' }));
+        identity = parseInput(identityFile);
     } catch (error: any) {
         throw Error(chalk.bold.red('The supplied file is in a readable .json format.'));
     }

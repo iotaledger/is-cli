@@ -38,7 +38,7 @@
         "type": "git"
     },
     "dependencies": {
-        "@iota/is-client": "^0.1.6",
+        "@iota/is-client": "^0.1.11",
         "@kubernetes/client-node": "^0.16.3",
         "chalk": "^5.0.1",
         "commander": "^8.3.0",

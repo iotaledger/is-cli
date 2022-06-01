@@ -1,0 +1,8 @@
+{
+	"username": "actorA",
+	"claimType": "User",
+	"claim": {
+		"name": "John",
+		"surname": "Smith"
+	}
+}

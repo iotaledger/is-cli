@@ -1,5 +1,25 @@
 import { program } from 'commander';
-import { createChannel, readChannel, subscribe, authorize, writeChannel } from './channel.js';
+import {
+    createChannel,
+    readChannel,
+    subscribe,
+    authorize,
+    writeChannel,
+    readHistory,
+    validateLogs,
+    reimportChannel,
+    addSubscription,
+    updateSubscription,
+    removeSubscription,
+    revokeSubscription,
+    findSubscription,
+    findAllSubscriptions,
+    searchChannel,
+    getChannelInfo,
+    addExistingChannel,
+    updateChannelInfo,
+    removeChannelInfo
+} from './channel.js';
 import { makeAdmin } from './admin.js';
 import { configure } from './config.js';
 import {
@@ -9,6 +29,7 @@ import {
     createCredential,
     createIdentity,
     findIdentity,
+    getJwt,
     getTrustedAuthorities,
     latestDocument,
     removeIdentity,
@@ -16,8 +37,10 @@ import {
     revokeCredential,
     searchIdentity,
     updateIdentity,
+    verifyJwt,
 } from './identity.js';
 import { setupApi } from './setup-api.js';
+import { SlowBuffer } from 'buffer';
 
 program
     .name("is")
@@ -35,140 +58,52 @@ program
     .option('-v, --apiVersion <api version>')
     .action(configure);
 
-//create did
 program
     .command('create-identity')
-    .requiredOption('-o, --outputFile <File where write the new Identity>')
-    .option('-i, --identityFile <path-to-identity-claim-file or stdin>')
     .description('Create a new DID with a .json file')
+    .requiredOption('-o, --outputFile <Path to output file>')
+    .option('-i, --identityFile <Path to identity claim file or stdin>')
     .action(createIdentity);
 
-// search dids by username
 program
     .command('search-identity <username>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Search users by username')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-o, --outputFile <Path to output file>')
     .action(searchIdentity);
 
-//find did by id
 program
     .command('find-identity <identityId>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Find identity by identity id')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-o, --outputFile <Path to output file>')
     .action(findIdentity);
 
-//add did to bridge
 program
-    .command('add-identity <pathToAddIdentityFile>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
+    .command('add-identity <Path to add-identity file>')
     .description('Add identity to bridge')
+    .requiredOption('-i, --identityFile <Path to identity file>')
     .action(addIdentity);
 
-//delete did from bridge
 program
     .command('remove-identity <identityId>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .option('-r, --revoke')
     .description('Remove identity by identity id')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-rC, --revokeCredential')
     .action(removeIdentity);
 
-//update did
 program
     .command('update-identity <updateFile>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Update with supplied document')
+    .requiredOption('-i, --identityFile <Path to identity file>')
     .action(updateIdentity);
 
-// return latest document of did
 program
     .command('get-identity <identityId>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
     .description('Returns latest document by id')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-o, --outputFile <Path to output file>')
     .action(latestDocument);
-
-//get trusted root identities
-program
-    .command('get-trusted')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .description('Get trusted root identities')
-    .action(getTrustedAuthorities);
-
-//add trusted root identity
-program
-    .command('add-trusted <authorityId>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .description('Add trusted root identity')
-    .action(addTrustedAuthority);
-
-//remove trusted root identity by id
-program
-    .command('remove-trusted <authorityId>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .description('Remove trusted root identity by id')
-    .action(removeTrustedAuthority);
-
-//create verifiable credential
-program
-    .command('create-vc')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .requiredOption('-d, --did <Target DID for the VC>')
-    .requiredOption('-o, --outputFile <File where write the VC>')
-    .option('-c, --credential <path-to-credential-claim-file (or stdin)>')
-    .description('Create a new VC')
-    .action(createCredential);
-
-//check verifiable credential
-program
-    .command('check-vc <credentialFile>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .description('Check the verifiable credential of an identity')
-    .action(checkCredential);
-
-//revoke verifiable credential
-program
-    .command('revoke-vc <signatureValue>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .description('Revoke one specific verifiable credential of an identity')
-    .action(revokeCredential);
-
-program
-    .command('create-channel <name>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .requiredOption('-t, --type <type-of-channel>')
-    .requiredOption('-s, --source <source-of-channel>')
-    .requiredOption('-o, --outputFile <File where write the new Identity>')
-    .description('Create a channel')
-    .action(createChannel);
-
-program
-    .command('write-channel <address>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .requiredOption('-p, --payload <message-payload>')
-    .description('Write data into channel')
-    .action(writeChannel);
-
-program
-    .command('read-channel <address>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .option('-li, --limit <number>')
-    .option('-in, --index <number>')
-    .option('-o, --order <boolean>')
-    .option('-sD, --startDate <date>')
-    .option('-eD, --endDate <date>')
-    .description('Get data from the channel with address channel address.')
-    .action(readChannel);
-
-program
-    .command('subscribe-channel <address>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .description('Subscribe identity to channel specified by the address.')
-    .action(subscribe);
-
-program
-    .command('authorize-channel <address> <did>')
-    .requiredOption('-i, --identityFile <path-to-identity-file>')
-    .description('Authorize an identity to write into the channel specified by the address.')
-    .action(authorize);
 
 program
     .command('make-admin')
@@ -177,6 +112,215 @@ program
     .requiredOption('-d, --deploymentName <Name of the deployed Helm chart>')
     .option('-n, --namespace <Namespace>')
     .action(makeAdmin);
+
+program
+    .command('get-trusted')
+    .description('Get trusted root identities')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-o, --outputFile <Path to output file>')
+    .action(getTrustedAuthorities);
+
+program
+    .command('add-trusted <authorityId>')
+    .description('Add trusted root identity')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .action(addTrustedAuthority);
+
+program
+    .command('remove-trusted <authorityId>')
+    .description('Remove trusted root identity by id')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .action(removeTrustedAuthority);
+
+program
+    .command('get-jwt')
+    .description('Get JWT of identity.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-o, --outputFile <Path to output file>')
+    .action(getJwt);
+
+program
+    .command('verify-jwt <jwt>')
+    .description('Check the verifiable credential of an identity. Validates the signed verifiable credential against the Issuer information stored onto the IOTA Tangle and checks if the issuer identity (DID) contained in the credential is from a trusted root.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .action(verifyJwt);
+
+program
+    .command('create-vc')
+    .description('Create a new VC')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-d, --did <Target DID for the VC>')
+    .requiredOption('-c, --credentialFile <Path to credential-claim file (or stdin)>')
+    .option('-o, --outputFile <Path to output file>')
+    .action(createCredential);
+
+program
+    .command('check-vc <credentialFile>')
+    .description('Check the verifiable credential of an identity')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .action(checkCredential);
+
+program
+    .command('revoke-vc <signatureValue>')
+    .description('Revoke one specific verifiable credential of an identity')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .action(revokeCredential);
+
+program
+    .command('create-channel <name>')
+    .description('Create a channel')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-t, --type <Type of topic>')
+    .requiredOption('-s, --source <Source of topic>')
+    .option('-o, --outputFile <Path to output file>')
+    .option('-pC, --publicChannel')
+    .action(createChannel);
+
+program
+    .command('write-channel <address>')
+    .description('Write data into channel')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-p, --payload <Message payload>')
+    .action(writeChannel);
+
+program
+    .command('read-channel <address>')
+    .description('Get data from the channel with address channel address.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-li, --limit <number>')
+    .option('-in, --index <number>')
+    .option('-o, --order <boolean>')
+    .option('-sD, --startDate <date>')
+    .option('-eD, --endDate <date>')
+    .option('-o, --outputFile <Path to output file>')
+    .action(readChannel);
+
+program
+    .command('read-channel-history <address>')
+    .description('Read history of a channel')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-psK, --presharedKey <Preshared key for private channels>', 'If interested in private channels the preshared key needs to be provided.')
+    .option('-pC, --publicChannel')
+    .option('-o, --outputFile <Path to output file>')
+    .action(readHistory);
+
+program
+    .command('subscribe-channel <address>')
+    .description('Subscribe identity to channel specified by the address.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .action(subscribe);
+
+program
+    .command('authorize-subscription <address> <did>')
+    .description('Authorize an identity to write into the channel specified by the address.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .action(authorize);
+
+program
+    .command('validate-channel <address>')
+    .description('Validates channel data by comparing the log of each link with the data on the tangle.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-d, --dataFile <Path to channel data file>')
+    .action(validateLogs)
+
+program
+    .command('reimport-channel <address>')
+    .description('Re-import the data from the Tangle into the database. A reason for it could be a malicious state of the data.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-s, --seed <Seed>')
+    .option('-p, --password <Subscription password>')
+    .action(reimportChannel)
+
+program
+    .command('search-channel <address>')
+    .description('Search for a channel.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-aI, --authorId <Author of the channel>')
+    .option('-n, --name <Channel name>')
+    .option('-cT, --channelType <Private or public channel>')
+    .option('-tT, --topicType <Type of topic>')
+    .option('-sT, --topicSource <Source of topic>')
+    .option('-c, --created <Date of creation>')
+    .option('-lM, --latestMessage <Latest message>')
+    .option('-l, --limit <number>')
+    .option('-i, --index <number>')
+    .option('-a, -ascending')
+    .option('-o, --outputFile <Path to output file>')
+    .action(searchChannel)
+
+program
+    .command('channel-info <address>')
+    .description('Get channel information.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-o, --outputFile <Path to output file>')
+    .action(getChannelInfo)
+
+program
+    .command('add-channel')
+    .description('Add an existing channel into the database.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
+    .action(addExistingChannel)
+
+program
+    .command('update-channel')
+    .description('Update channel information. The author of a channel can update topics of a channel.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
+    .action(updateChannelInfo)
+
+program
+    .command('remove-channel')
+    .description('Delete information of a channel with address channel-address. The author of a channel can delete its entry in the database. In this case all subscriptions will be deleted and the channel won’t be found in the system anymore. The data & channel won’t be deleted from the IOTA Tangle since its data is immutable on the tangle!')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .action(removeChannelInfo)
+
+program
+    .command('add-subscription <address>')
+    .description('Adds an existing subscription (e.g. the subscription was not created with the api but locally.)')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-s, --subscriptionFile <Path to subscription file>')
+    .requiredOption('-sI, --subscriberId <Id of subscriber>')
+    .action(addSubscription)
+
+program
+    .command('update-subscription <address>')
+    .description('Update an existing subscription.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-s, --subscriptionFile <Path to subscription file>')
+    .requiredOption('-sI, --subscriberId <Id of subscriber>')
+    .action(updateSubscription)
+
+program
+    .command('remove-subscription <address>')
+    .description('Delete an existing subscription.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-sI, --subscriberId <Id of subscriber>')
+    .action(removeSubscription)
+
+program
+    .command('revoke-subscription <address>')
+    .description('Revoke subscription to a channel. Only the author of a channel can revoke a subscription from a channel.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-sI, --subscriberId <Id of subscriber>')
+    .option('-sL, --subscriptionLink <Subscription link>')
+    .action(revokeSubscription)
+
+program
+    .command('find-subscription <address>')
+    .description('Get a subscription of a channel by subscriber id.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-sI, --subscriberId <Id of subscriber>')
+    .option('-o, --outputFile <Path to output file>')
+    .action(findSubscription)
+
+program
+    .command('find-all-subscriptions <address>')
+    .description('Get all subscriptions of a channel.')
+    .requiredOption('-i, --identityFile <Path to identity file>')
+    .option('-iA, --isAuthorized')
+    .option('-o, --outputFile <Path to output file>')
+    .action(findAllSubscriptions)
 
 program
     .command('setup-node')

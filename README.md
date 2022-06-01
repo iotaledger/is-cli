@@ -150,12 +150,70 @@ is help
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
+<!--IDENTITY EXAMPLES -->
+## Identity Examples
+
+### Create two identities
+```sh
+is create-identity -i examples/identityA.json -o identityA.json 
+```
+```sh
+is create-identity -i examples/identityB.json -o identityB.json 
+```
+
+### Create a public channel
+```sh
+is create-channel -i identityA.json -t logs -s device -o channelA.json -pC test-channel
+```
+#### For private channels remove option `-pC`
+
+### Write to channel
+```sh
+is write-channel -i identityA.json -p "hello world" <Channel address of channelA>
+```
+
+### Request subscription 
+```sh
+is subscribe-channel -i identityB.json <Channel address of channelA>
+```
+
+### Authorize subscription
+```sh
+is authorize-channel -i identityA.json <Channel address of channelA> <Id of identityB>
+```
+
+### Write message as subscriber
+```sh
+is write-channel -i identityB.json -p "Can you hear me?" <Channel address of channelA>
+```
+
+### Read channel
+```sh
+is read-channel -i identityB.json <Channel address of channelA> 
+```
+
+### Read history for public channel
+```sh
+is read-channel-history -i identityB.json -pC <Channel address of channelA> 
+```
+#### For private channels remove option `-pC`and provide the preshared key with option `-psK`
+
+### Revoke subscription 
+```sh
+is revoke-subscription -i identityA.json -sI <Id of identityB> <Channel address of channelA> 
+```
+
+### Check if subscription is revoked 
+```sh
+is find-subscription -i identityA.json -sI <Id of identityB> <Channel address of channelA> 
+```
+
 
 <!-- ROADMAP -->
 ## Roadmap
 
 - [x] IS API setup script
-- [ ] Add all IS-Client commands to the cli
+- [x] Add all IS-Client commands to the cli
 
 
 See the [open issues](https://github.com/iotaledger/is-cli/issues) for a full list of proposed features (and known issues).
