@@ -19,7 +19,10 @@ export const configure = async (options: {
         checkConfig(isGatewayUrl, ssiBridgeUrl, auditTrailUrl);
 
         // Delete the old config when a new one is created
-        fs.unlinkSync(path.join(os.homedir(), '.iota-is.json'));
+        if (fs.existsSync(path.join(os.homedir(), '.iota-is.json'))) {
+            fs.unlinkSync(path.join(os.homedir(), '.iota-is.json'));
+        }
+
         nconf
             .argv()
             .env()
