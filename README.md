@@ -150,8 +150,8 @@ is help
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
-<!--IDENTITY EXAMPLES -->
-## Identity Examples
+<!--EXAMPLES -->
+## Examples
 
 ### Create two identities
 ```sh
