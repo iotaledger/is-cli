@@ -179,7 +179,7 @@ is subscribe-channel -i identityB.json <Channel address of channelA>
 
 ### Authorize subscription
 ```sh
-is authorize-channel -i identityA.json <Channel address of channelA> <Id of identityB>
+is authorize-subscription -i identityA.json <Channel address of channelA> <Id of identityB>
 ```
 
 ### Write message as subscriber
