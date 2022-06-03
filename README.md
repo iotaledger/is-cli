@@ -184,7 +184,7 @@ is create-identity -i examples/identityB.json -o identityB.json
 Next we will create a private Channel with a topic `logs` and the source `device` and save the created Channel in a file called `channelA.json`. For public Channels add the option `-pC`. For public Channels a subscriber is automatically authorized to the Channel but can't write into it. The user can read the history of this channel with the command `is read-channel-history`.
 
 ```sh
-is create-channel -i identityA.json -t logs -s device -o channelA.json -pC test-channel
+is create-channel -i identityA.json -t logs -s device -o channelA.json test-channel
 ```
 
 ### Write to Channel
