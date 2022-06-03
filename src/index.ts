@@ -43,7 +43,7 @@ import { setupApi } from './setup-api.js';
 
 program
     .name("is")
-    .version('0.0.20', '-v, --vers', 'output the current version')
+    .version('0.0.22', '-v, --vers', 'output the current version')
     .description("CLI to Integration Services APIs: manage Identities and Channels with ease.")
     .showSuggestionAfterError()
 
