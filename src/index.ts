@@ -40,7 +40,6 @@ import {
     verifyJwt,
 } from './identity.js';
 import { setupApi } from './setup-api.js';
-import { SlowBuffer } from 'buffer';
 
 program
     .name("is")
@@ -174,19 +173,23 @@ program
     .requiredOption('-s, --source <Source of topic>')
     .option('-o, --outputFile <Path to output file>')
     .option('-pC, --publicChannel')
+    .option('-hasPsK, --hasPresharedKey')
+    .option('-d, --description <Channel description>')
     .action(createChannel);
 
 program
-    .command('write-channel <address>')
+    .command('write-channel')
     .description('Write data into channel')
     .requiredOption('-i, --identityFile <Path to identity file>')
     .requiredOption('-p, --payload <Message payload>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .action(writeChannel);
 
 program
-    .command('read-channel <address>')
+    .command('read-channel')
     .description('Get data from the channel with address channel address.')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .option('-li, --limit <number>')
     .option('-in, --index <number>')
     .option('-o, --order <boolean>')
@@ -196,43 +199,50 @@ program
     .action(readChannel);
 
 program
-    .command('read-channel-history <address>')
+    .command('read-channel-history')
     .description('Read history of a channel')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .option('-psK, --presharedKey <Preshared key for private channels>', 'If interested in private channels the preshared key needs to be provided.')
     .option('-pC, --publicChannel')
     .option('-o, --outputFile <Path to output file>')
     .action(readHistory);
 
 program
-    .command('subscribe-channel <address>')
+    .command('subscribe-channel')
     .description('Subscribe identity to channel specified by the address.')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
+    .option('-s, --seed <Seed of channel>')
+    .option('-aR, --accessRights <Access rights: Audit, Read, Write, ReadAndWrite>')
+    .option('-psK, --presharedKey <Preshared key of channel>')
     .action(subscribe);
 
 program
-    .command('authorize-subscription <address> <did>')
+    .command('authorize-subscription <id>')
     .description('Authorize an identity to write into the channel specified by the address.')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .action(authorize);
 
 program
-    .command('validate-channel <address>')
+    .command('validate-logs')
     .description('Validates channel data by comparing the log of each link with the data on the tangle.')
     .requiredOption('-i, --identityFile <Path to identity file>')
-    .requiredOption('-d, --dataFile <Path to channel data file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
+    .requiredOption('-d, --dataFile <Path to channel-data file>')
     .action(validateLogs)
 
 program
-    .command('reimport-channel <address>')
+    .command('reimport-channel')
     .description('Re-import the data from the Tangle into the database. A reason for it could be a malicious state of the data.')
     .requiredOption('-i, --identityFile <Path to identity file>')
-    .requiredOption('-s, --seed <Seed>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .option('-p, --password <Subscription password>')
     .action(reimportChannel)
 
 program
-    .command('search-channel <address>')
+    .command('search-channel')
     .description('Search for a channel.')
     .requiredOption('-i, --identityFile <Path to identity file>')
     .option('-aI, --authorId <Author of the channel>')
@@ -249,9 +259,10 @@ program
     .action(searchChannel)
 
 program
-    .command('channel-info <address>')
+    .command('channel-info')
     .description('Get channel information.')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .option('-o, --outputFile <Path to output file>')
     .action(getChannelInfo)
 
@@ -271,53 +282,60 @@ program
 
 program
     .command('remove-channel')
-    .description('Delete information of a channel with address channel-address. The author of a channel can delete its entry in the database. In this case all subscriptions will be deleted and the channel won’t be found in the system anymore. The data & channel won’t be deleted from the IOTA Tangle since its data is immutable on the tangle!')
+    .description('Delete information of a channel with channel-address. The author of a channel can delete its entry in the database. In this case all subscriptions will be deleted and the channel won’t be found in the system anymore. The data & channel won’t be deleted from the IOTA Tangle since its data is immutable on the tangle!')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .action(removeChannelInfo)
 
 program
-    .command('add-subscription <address>')
+    .command('add-subscription')
     .description('Adds an existing subscription (e.g. the subscription was not created with the api but locally.)')
     .requiredOption('-i, --identityFile <Path to identity file>')
     .requiredOption('-s, --subscriptionFile <Path to subscription file>')
     .requiredOption('-sI, --subscriberId <Id of subscriber>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .action(addSubscription)
 
 program
-    .command('update-subscription <address>')
+    .command('update-subscription')
     .description('Update an existing subscription.')
     .requiredOption('-i, --identityFile <Path to identity file>')
     .requiredOption('-s, --subscriptionFile <Path to subscription file>')
     .requiredOption('-sI, --subscriberId <Id of subscriber>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .action(updateSubscription)
 
 program
-    .command('remove-subscription <address>')
+    .command('remove-subscription')
     .description('Delete an existing subscription.')
     .requiredOption('-i, --identityFile <Path to identity file>')
     .requiredOption('-sI, --subscriberId <Id of subscriber>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .action(removeSubscription)
 
 program
-    .command('revoke-subscription <address>')
+    .command('revoke-subscription')
     .description('Revoke subscription to a channel. Only the author of a channel can revoke a subscription from a channel.')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .option('-sI, --subscriberId <Id of subscriber>')
     .option('-sL, --subscriptionLink <Subscription link>')
     .action(revokeSubscription)
 
 program
-    .command('find-subscription <address>')
+    .command('find-subscription')
     .description('Get a subscription of a channel by subscriber id.')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .requiredOption('-sI, --subscriberId <Id of subscriber>')
     .option('-o, --outputFile <Path to output file>')
     .action(findSubscription)
 
 program
-    .command('find-all-subscriptions <address>')
+    .command('find-all-subscriptions')
     .description('Get all subscriptions of a channel.')
     .requiredOption('-i, --identityFile <Path to identity file>')
+    .requiredOption('-c, --channelFile <Path to channel file>')
     .option('-iA, --isAuthorized')
     .option('-o, --outputFile <Path to output file>')
     .action(findAllSubscriptions)

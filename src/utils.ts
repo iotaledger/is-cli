@@ -26,3 +26,9 @@ export const writeOutput = (description: string, result?: any, outputFile?: stri
         fs.writeFileSync(outputFile, JSON.stringify(result, undefined, 2));
     }
 }
+
+export const checkProperty = (property: any, propertyName?: string) => {
+    if(!property){
+        throw new Error(chalk.bold.red(`${propertyName ? propertyName : 'The required property for this command'} does not exist in provided file`));
+    }
+}

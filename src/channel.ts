@@ -1,21 +1,32 @@
-import { ChannelClient, ClientConfig, Subscription, SubscriptionUpdate, ValidateBody } from '@iota/is-client';
+import { AccessRights, ChannelClient, ClientConfig, Subscription, SubscriptionUpdate, ValidateBody } from '@iota/is-client';
 import chalk from 'chalk';
 import fs from 'fs';
 import nconf from 'nconf';
 import os, { type } from 'os';
-import path from 'path';
-import { writeOutput, parseInput } from './utils.js';
+import path, { parse } from 'path';
+import { writeOutput, parseInput, checkProperty } from './utils.js';
 
 enum ChannelType {
     public = "public",
     private = "private"
 }
 
-export const createChannel = async (name: string, options: { type: string; source: string; identityFile: string, outputFile: string, publicChannel?: boolean }) => {
+
+export const createChannel = async (
+    name: string,
+    options: {
+        type: string;
+        source: string;
+        identityFile: string,
+        outputFile: string,
+        publicChannel?: boolean,
+        hasPresharedKey?: boolean,
+        description: string
+    }) => {
     try {
-        const { type, source, identityFile, outputFile, publicChannel } = options;
+        const { type, source, identityFile, outputFile, publicChannel, hasPresharedKey, description } = options;
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.create({ name, type: publicChannel ? ChannelType.public : ChannelType.private , topics: [{ type, source }] });
+        const response = await api?.create({ name, description, hasPresharedKey, type: publicChannel ? ChannelType.public : ChannelType.private, topics: [{ type, source }] });
         writeOutput('Created channel:', response, outputFile);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -23,23 +34,27 @@ export const createChannel = async (name: string, options: { type: string; sourc
     }
 };
 
-export const writeChannel = async (address: string, options: { identityFile: string; payload: string }) => {
+export const writeChannel = async (options: { identityFile: string; payload: string, channelFile: string }) => {
     try {
-        const { identityFile, payload } = options;
+        const { identityFile, payload, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.write(address, { payload });
-        writeOutput('Message written to channel: ' + address, response);
+        const response = await api?.write(channel?.channelAddress, { payload });
+        writeOutput('Message written to channel: ' + channel?.channelAddress, response);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 };
 
-export const readHistory = async (address: string, options: { identityFile: string, presharedKey: string, publicChannel: boolean, outputFile: string }) => {
+export const readHistory = async (options: { identityFile: string, presharedKey: string, publicChannel: boolean, outputFile: string, channelFile: string }) => {
     try {
-        const { identityFile, presharedKey, publicChannel, outputFile } = options;
+        const { identityFile, presharedKey, publicChannel, outputFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.readHistory(address, presharedKey, publicChannel ? ChannelType.public : ChannelType.private);
+        const response = await api?.readHistory(channel.channelAddress, presharedKey, publicChannel ? ChannelType.public : ChannelType.private);
         writeOutput('History: ', response, outputFile);
     } catch (e: any) {
         console.log(chalk.bold.red(e.message));
@@ -48,7 +63,6 @@ export const readHistory = async (address: string, options: { identityFile: stri
 }
 
 export const readChannel = async (
-    address: string,
     options: {
         identityFile: string,
         limit: string,
@@ -56,13 +70,16 @@ export const readChannel = async (
         asc: string,
         startDate: string,
         endDate: string,
-        outputFile: string
+        outputFile: string,
+        channelFile: string
     }
 ) => {
     try {
-        const { identityFile, limit, index, asc, startDate, endDate, outputFile } = options;
+        const { identityFile, limit, index, asc, startDate, endDate, outputFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.read(address, {
+        const response = await api?.read(channel.channelAddress, {
             limit: limit ? Number(limit) : undefined,
             index: index ? Number(index) : undefined,
             asc: asc ? Boolean(asc) : undefined,
@@ -76,11 +93,14 @@ export const readChannel = async (
     }
 };
 
-export const reimportChannel = async (address: string, options: { identityFile: string, seed?: string, subscriptionPassword?: string }) => {
+export const reimportChannel = async (options: { identityFile: string, password?: string, channelFile: string }) => {
     try {
-        const { identityFile, seed, subscriptionPassword } = options;
+        const { identityFile, password, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
+        checkProperty(channel?.seed, "seed");
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.reimport(address, { seed, subscriptionPassword });
+        const response = await api?.reimport(channel.channelAddress, { seed: channel.seed, subscriptionPassword: password });
         writeOutput('Reimport:', response);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -88,12 +108,14 @@ export const reimportChannel = async (address: string, options: { identityFile: 
     }
 }
 
-export const validateLogs = async (address: string, options: { identityFile: string, validateDataFile: string }) => {
+export const validateLogs = async (options: { identityFile: string, dataFile: string, channelFile: string }) => {
     try {
-        const { validateDataFile, identityFile } = options;
-        const data: ValidateBody = parseInput(validateDataFile);
+        const { dataFile, identityFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
+        const data: ValidateBody = parseInput(dataFile);
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.validate(address, data);
+        const response = await api?.validate(channel.channelAddress, data);
         writeOutput('Validation result:', response);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -101,11 +123,17 @@ export const validateLogs = async (address: string, options: { identityFile: str
     }
 }
 
-export const subscribe = async (address: string, options: { identityFile: string }) => {
+export const subscribe = async (options: { identityFile: string, rights: string, seed: string, presharedKey: string, channelFile: string }) => {
     try {
-        const { identityFile } = options;
+        const { identityFile, channelFile, rights, presharedKey, seed } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
+        let accessRights: AccessRights | undefined = undefined ;
+        if(Object.values(AccessRights).includes(rights as AccessRights)){
+            accessRights = rights as AccessRights;
+        }
         const api = await getAuthenticatedApi(identityFile);
-        const subscription = await api.requestSubscription(address);
+        const subscription = await api.requestSubscription(channel.channelAddress, {seed, accessRights, presharedKey});
         writeOutput('Subscription', subscription);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -113,33 +141,37 @@ export const subscribe = async (address: string, options: { identityFile: string
     }
 }
 
-export const authorize = async (address: string, did: string, options: { identityFile: string }) => {
+export const authorize = async (id: string, options: { identityFile: string, channelFile: string}) => {
     try {
-        const { identityFile } = options;
+        const { identityFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        const subscription = await api.findSubscription(address, did);
+        const subscription = await api.findSubscription(channel.channelAddress, id);
         if (!subscription) {
             console.error(chalk.bold.green('Subscription not found'))
             return;
         }
         console.error(chalk.bold.green('Subscription found: authorizing...'));
-        const response = await api.authorizeSubscription(address, {
+        const response = await api.authorizeSubscription(channel.channelAddress, {
             subscriptionLink: subscription.subscriptionLink,
             id: subscription.id
         })
-        writeOutput('Identity ' + did + " authorized", response);
+        writeOutput('Identity ' + id + " authorized", response);
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
         if (e?.response?.data?.error) console.error(chalk.bold.red(e.response.data.error));
     }
 }
 
-export const addSubscription = async (address: string, options: { subscriberId: string, identityFile: string, subscriptionFile: string }) => {
+export const addSubscription = async (options: { subscriberId: string, identityFile: string, subscriptionFile: string, channelFile: string }) => {
     try {
-        const { identityFile, subscriberId, subscriptionFile } = options;
+        const { identityFile, subscriberId, subscriptionFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const subscription: Subscription = parseInput(subscriptionFile);
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.addSubscription(address, subscriberId, subscription);
+        const response = await api?.addSubscription(channel.channelAddress, subscriberId, subscription);
         writeOutput(`Added subscription`, response)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -147,12 +179,14 @@ export const addSubscription = async (address: string, options: { subscriberId: 
     }
 }
 
-export const updateSubscription = async (address: string, options: { subscriberId: string, identityFile: string, subscriptionUpdateFile: string }) => {
+export const updateSubscription = async (options: { subscriberId: string, identityFile: string, subscriptionFile: string, channelFile: string }) => {
     try {
-        const { identityFile, subscriberId, subscriptionUpdateFile } = options;
-        const subscriptionUpdate: SubscriptionUpdate = parseInput(subscriptionUpdateFile);
+        const { identityFile, subscriberId, subscriptionFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
+        const subscriptionUpdate: SubscriptionUpdate = parseInput(subscriptionFile);
         const api = await getAuthenticatedApi(identityFile);
-        await api?.updateSubscription(address, subscriberId, subscriptionUpdate);
+        await api?.updateSubscription(channel.channelAddress, subscriberId, subscriptionUpdate);
         writeOutput(`Updated subscription`)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -160,11 +194,13 @@ export const updateSubscription = async (address: string, options: { subscriberI
     }
 }
 
-export const removeSubscription = async (address: string, options: { subscriberId: string, identityFile: string }) => {
+export const removeSubscription = async (options: { subscriberId: string, identityFile: string, channelFile: string }) => {
     try {
-        const { identityFile, subscriberId } = options;
+        const { identityFile, subscriberId, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        await api?.removeSubscription(address, subscriberId);
+        await api?.removeSubscription(channel.channelAddress, subscriberId);
         writeOutput(`Removed subscription`)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -172,11 +208,13 @@ export const removeSubscription = async (address: string, options: { subscriberI
     }
 }
 
-export const revokeSubscription = async (address: string, options: { identityFile: string, subscriptionLink: string, subscriberId: string }) => {
+export const revokeSubscription = async (options: { identityFile: string, subscriptionLink: string, subscriberId: string, channelFile: string }) => {
     try {
-        const { identityFile, subscriptionLink, subscriberId } = options;
+        const { identityFile, subscriptionLink, subscriberId, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        await api?.revokeSubscription(address, { subscriptionLink, id: subscriberId });
+        await api?.revokeSubscription(channel.channelAddress, { subscriptionLink, id: subscriberId });
         writeOutput(`Revoked subscription`)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -184,11 +222,13 @@ export const revokeSubscription = async (address: string, options: { identityFil
     }
 }
 
-export const findSubscription = async (address: string, options: { subscriberId: string, identityFile: string, outputFile: string }) => {
+export const findSubscription = async (options: { subscriberId: string, identityFile: string, outputFile: string, channelFile: string }) => {
     try {
-        const { identityFile, subscriberId, outputFile } = options;
+        const { identityFile, subscriberId, outputFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.findSubscription(address, subscriberId);
+        const response = await api?.findSubscription(channel.channelAddress, subscriberId);
         writeOutput(`Found subscription: `, response, outputFile)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -196,11 +236,13 @@ export const findSubscription = async (address: string, options: { subscriberId:
     }
 }
 
-export const findAllSubscriptions = async (address: string, options: { identityFile: string, isAuthorized?: boolean, outputFile: string }) => {
+export const findAllSubscriptions = async (options: { identityFile: string, isAuthorized?: boolean, outputFile: string, channelFile: string }) => {
     try {
-        const { identityFile, isAuthorized, outputFile } = options;
+        const { identityFile, isAuthorized, outputFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.findAllSubscriptions(address, isAuthorized);
+        const response = await api?.findAllSubscriptions(channel.channelAddress, isAuthorized);
         writeOutput(`Found subscriptions`, response, outputFile)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -233,11 +275,13 @@ export const searchChannel = async (options: {
     }
 }
 
-export const getChannelInfo = async (address: string, options: { identityFile: string, outputFile: string }) => {
+export const getChannelInfo = async (options: { identityFile: string, outputFile: string, channelFile: string }) => {
     try {
-        const { identityFile, outputFile } = options;
+        const { identityFile, outputFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        const response = await api?.info(address);
+        const response = await api?.info(channel.channelAddress);
         writeOutput(`Found channel info`, response, outputFile)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
@@ -271,11 +315,13 @@ export const updateChannelInfo = async (options: { identityFile: string, channel
     }
 }
 
-export const removeChannelInfo = async (address: string, options: { identityFile: string }) => {
+export const removeChannelInfo = async (options: { identityFile: string, channelFile: string }) => {
     try {
-        const { identityFile } = options;
+        const { identityFile, channelFile } = options;
+        const channel = parseInput(channelFile);
+        checkProperty(channel?.channelAddress, "channelAddress");
         const api = await getAuthenticatedApi(identityFile);
-        await api?.remove(address);
+        await api?.remove(channel.channelAddress);
         writeOutput(`Removed channel information from the database.`)
     } catch (e: any) {
         console.error(chalk.bold.red(e.message));
