@@ -173,7 +173,7 @@ program
     .requiredOption('-s, --source <Source of topic>')
     .option('-o, --outputFile <Path to output file>')
     .option('-pC, --publicChannel')
-    .option('-hasPsK, --hasPresharedKey')
+    .option('-sK, --presharedKey')
     .option('-d, --description <Channel description>')
     .action(createChannel);
 
@@ -203,7 +203,7 @@ program
     .description('Read history of a channel')
     .requiredOption('-i, --identityFile <Path to identity file>')
     .requiredOption('-c, --channelFile <Path to channel file>')
-    .option('-psK, --presharedKey <Preshared key for private channels>', 'If interested in private channels the preshared key needs to be provided.')
+    .option('-sK, --presharedKey <Preshared key for private channels>', 'If interested in private channels the preshared key needs to be provided.')
     .option('-pC, --publicChannel')
     .option('-o, --outputFile <Path to output file>')
     .action(readHistory);
@@ -215,7 +215,7 @@ program
     .requiredOption('-c, --channelFile <Path to channel file>')
     .option('-s, --seed <Seed of channel>')
     .option('-aR, --accessRights <Access rights: Audit, Read, Write, ReadAndWrite>')
-    .option('-psK, --presharedKey <Preshared key of channel>')
+    .option('-sK, --presharedKey <Preshared key of channel>')
     .action(subscribe);
 
 program
