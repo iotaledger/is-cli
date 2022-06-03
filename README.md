@@ -153,7 +153,9 @@ is help
 <!--EXAMPLES -->
 ## Examples
 
-### Create two identities
+### Create two Identities
+
+In the examples folder are two files with identity claims provided.
 ```sh
 is create-identity -i examples/identityA.json -o identityA.json 
 ```
@@ -161,23 +163,25 @@ is create-identity -i examples/identityA.json -o identityA.json
 is create-identity -i examples/identityB.json -o identityB.json 
 ```
 
-### Create a public channel
-```sh
-is create-channel -i identityA.json -t logs -s device -o channelA.json -pC test-channel
-```
-#### For private channels remove option `-pC`
+### Create a private Channel
 
-### Write to channel
+For public Channels add the option `-pC`. For public Channels a subscriber is automatically authorized to but can't write into it. The user can read the history of this channel with the command `is read-channel-history`.
+
+```sh
+is create-channel -i identityA.json -t logs -s device -o channelA.json test-channel
+```
+
+### Write to Channel
 ```sh
 is write-channel -i identityA.json -p "hello world" <Channel address of channelA>
 ```
 
-### Request subscription 
+### Request Subscription 
 ```sh
 is subscribe-channel -i identityB.json <Channel address of channelA>
 ```
 
-### Authorize subscription
+### Authorize Subscription
 ```sh
 is authorize-subscription -i identityA.json <Channel address of channelA> <Id of identityB>
 ```
@@ -187,23 +191,26 @@ is authorize-subscription -i identityA.json <Channel address of channelA> <Id of
 is write-channel -i identityB.json -p "Can you hear me?" <Channel address of channelA>
 ```
 
-### Read channel
+### Read Channel
 ```sh
 is read-channel -i identityB.json <Channel address of channelA> 
 ```
 
-### Read history for public channel
-```sh
-is read-channel-history -i identityB.json -pC <Channel address of channelA> 
-```
-#### For private channels remove option `-pC`and provide the preshared key with option `-psK`
+### Read history of Channel
 
-### Revoke subscription 
+Read the history of a Channel especially if the Channel is `public` it is the only way for the subscriber to read from the Channel. For that add the option `-pC` and remove the option for the preshared Key `-psK`.
+```sh
+is read-channel-history -i identityB.json -psK <preshared key> <Channel address of channelA> 
+```
+
+### Revoke Subscription 
 ```sh
 is revoke-subscription -i identityA.json -sI <Id of identityB> <Channel address of channelA> 
 ```
 
-### Check if subscription is revoked 
+### Find Subscription
+
+Double check if the Subscription is revoked by simply trying to find it. 
 ```sh
 is find-subscription -i identityA.json -sI <Id of identityB> <Channel address of channelA> 
 ```
