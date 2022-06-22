@@ -43,7 +43,7 @@ import { setupApi } from './setup-api.js';
 
 program
     .name("is")
-    .version('0.0.22', '-v, --vers', 'output the current version')
+    .version('0.0.23', '-v, --vers', 'output the current version')
     .description("CLI to Integration Services APIs: manage Identities and Channels with ease.")
     .showSuggestionAfterError()
 
@@ -246,6 +246,8 @@ program
     .description('Search for a channel.')
     .requiredOption('-i, --identityFile <Path to identity file>')
     .option('-aI, --authorId <Author of the channel>')
+    .option('-sI, --subscriberId <Subscriber of the channel')
+    .option('-rsI, --requestedSubscriptionId <Issuer of the requested Subscription')
     .option('-n, --name <Channel name>')
     .option('-cT, --channelType <Private or public channel>')
     .option('-tT, --topicType <Type of topic>')
@@ -254,7 +256,7 @@ program
     .option('-lM, --latestMessage <Latest message>')
     .option('-l, --limit <number>')
     .option('-i, --index <number>')
-    .option('-a, -ascending')
+    .option('-a, --ascending')
     .option('-o, --outputFile <Path to output file>')
     .action(searchChannel)
 

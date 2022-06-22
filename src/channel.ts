@@ -254,6 +254,8 @@ export const searchChannel = async (options: {
     identityFile: string,
     outputFile: string,
     authorId: string,
+    subscriberId: string,
+    requestedSubscriptionId: string,
     name: string,
     channelType: ChannelType,
     topicType: string,
